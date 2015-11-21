@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="deqp_support">
+      <UniqueIdentifier>{B0F70ABC-08A9-A55B-CA3E-0062596FBCEF}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="deqp_support">
+      <UniqueIdentifier>{B0F70ABC-08A9-A55B-CA3E-0062596FBCEF}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="deqp_support">
+      <UniqueIdentifier>{B0F70ABC-08A9-A55B-CA3E-0062596FBCEF}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="deqp_support">
+      <UniqueIdentifier>{B0F70ABC-08A9-A55B-CA3E-0062596FBCEF}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="deqp_support">
+      <UniqueIdentifier>{B0F70ABC-08A9-A55B-CA3E-0062596FBCEF}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="deqp_support">
+      <UniqueIdentifier>{B0F70ABC-08A9-A55B-CA3E-0062596FBCEF}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="tests.gyp"/>
+    <None Include="deqp_support\dEQP-EGL-cases.txt.gz">
+      <Filter>deqp_support</Filter>
+    </None>
+    <None Include="deqp_support\dEQP-GLES2-cases.txt.gz">
+      <Filter>deqp_support</Filter>
+    </None>
+    <None Include="deqp_support\dEQP-GLES3-cases.txt.gz">
+      <Filter>deqp_support</Filter>
+    </None>
+    <None Include="deqp_support\deqp_egl_test_expectations.txt">
+      <Filter>deqp_support</Filter>
+    </None>
+    <None Include="deqp_support\deqp_gles2_test_expectations.txt">
+      <Filter>deqp_support</Filter>
+    </None>
+    <None Include="deqp_support\deqp_gles3_test_expectations.txt">
+      <Filter>deqp_support</Filter>
+    </None>
+  </ItemGroup>
+</Project>
