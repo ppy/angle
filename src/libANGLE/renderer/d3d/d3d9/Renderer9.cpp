@@ -49,7 +49,7 @@
 #include "libANGLE/Surface.h"
 #include "libANGLE/Texture.h"
 #include "third_party/trace_event/trace_event.h"
-
+#include <fstream>
 
 
 #if !defined(ANGLE_COMPILE_OPTIMIZATION_LEVEL)
@@ -496,12 +496,29 @@ egl::ConfigSet Renderer9::generateConfigs() const
                     config.transparentRedValue = 0;
                     config.transparentGreenValue = 0;
                     config.transparentBlueValue = 0;
+					config.fullscreen = EGL_FALSE;
 
-                    configs.add(config);
+					//Todo: Remove comment
+                    //configs.add(config);
+
+					// If this config supports going fullscreen,
+					// add a duplicate config with fullscreen set to true.
+					HRESULT result = mD3d9->CheckDeviceType(mAdapter, mDeviceType, currentDisplayMode.Format, d3d9ColorBufferFormatInfo.renderFormat, false);
+					if (SUCCEEDED(result))
+					{
+						egl::Config newConfig(config);
+						newConfig.fullscreen = EGL_TRUE;
+						configs.add(newConfig);
+					}
                 }
             }
         }
     }
+
+	std::ofstream fStream("angle.log");
+	for (size_t i = 1; i <= configs.size(); i++)
+		fStream << d3d9::GetTextureFormatInfo(configs.get(i).renderTargetFormat).renderFormat << ' ';
+	fStream.close();
 
     ASSERT(configs.size() > 0);
     return configs;

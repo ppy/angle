@@ -44,6 +44,9 @@ class SwapChain9 : public SwapChainD3D
   private:
     void release();
 
+	bool createWindowed(int backbufferWidth, int backbufferHeight, D3DFORMAT depthFormatInfo, D3DFORMAT backbufferFormatInfo, EGLint swapInterval, int& error);
+	bool createFullscreen(int& backbufferWidth, int& backbufferHeight, D3DFORMAT depthFormatInfo, D3DFORMAT backbufferFormatInfo, EGLint swapInterval, int& error);
+
     Renderer9 *mRenderer;
     EGLint mHeight;
     EGLint mWidth;

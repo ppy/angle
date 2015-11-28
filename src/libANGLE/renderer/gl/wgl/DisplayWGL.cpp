@@ -424,6 +424,7 @@ egl::ConfigSet DisplayWGL::generateConfigs() const
     config.transparentRedValue = 0;
     config.transparentGreenValue = 0;
     config.transparentBlueValue = 0;
+	config.fullscreen = EGL_FALSE;
 
     configs.add(config);
 

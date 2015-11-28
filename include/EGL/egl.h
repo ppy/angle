@@ -82,6 +82,7 @@ typedef void (*__eglMustCastToProperFunctionPointerType)(void);
 #define EGL_DRAW                          0x3059
 #define EGL_EXTENSIONS                    0x3055
 #define EGL_FALSE                         0
+#define EGL_FULLSCREEN_ANGLE              0x304f
 #define EGL_GREEN_SIZE                    0x3023
 #define EGL_HEIGHT                        0x3056
 #define EGL_LARGEST_PBUFFER               0x3058
