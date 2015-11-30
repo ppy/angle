@@ -12,9 +12,6 @@
 #include "libANGLE/renderer/d3d/d3d9/Renderer9.h"
 #include "libANGLE/features.h"
 
-#include <sstream>
-#include <fstream>
-
 namespace rx
 {
 
@@ -147,7 +144,6 @@ bool SwapChain9::createWindowed(int backbufferWidth, int backbufferHeight, D3DFO
 			ASSERT(result == D3DERR_OUTOFVIDEOMEMORY || result == E_OUTOFMEMORY || result == D3DERR_INVALIDCALL);
 
 			ERR("Could not create depthstencil surface for new swap chain: 0x%08X", result);
-
 			release();
 
 			if (d3d9::isDeviceLostError(result))
@@ -162,11 +158,6 @@ bool SwapChain9::createWindowed(int backbufferWidth, int backbufferHeight, D3DFO
 			}
 		}
 	}
-
-	std::stringstream ss;
-	std::ofstream fStream("angle.log");
-	fStream << "Created windowed" << std::endl;
-	fStream.close();
 
 	return true;
 }
@@ -194,7 +185,7 @@ bool SwapChain9::createFullscreen(int& backbufferWidth, int& backbufferHeight, D
 		presentParameters.BackBufferFormat = backbufferFormatInfo;
 		presentParameters.EnableAutoDepthStencil = TRUE;
 		presentParameters.Flags = 0;
-		presentParameters.hDeviceWindow = window;
+		presentParameters.hDeviceWindow = mRenderer->getDeviceWindow();
 		presentParameters.MultiSampleQuality = 0;                  // FIXME: Unimplemented
 		presentParameters.MultiSampleType = D3DMULTISAMPLE_NONE;   // FIXME: Unimplemented
 		presentParameters.PresentationInterval = convertInterval(swapInterval);
@@ -204,8 +195,7 @@ bool SwapChain9::createFullscreen(int& backbufferWidth, int& backbufferHeight, D
 		presentParameters.BackBufferHeight = backbufferHeight;
 		presentParameters.FullScreen_RefreshRateInHz = displayMode.RefreshRate;
 
-		result = device->CreateAdditionalSwapChain(&presentParameters, &mSwapChain);
-
+		result = device->Reset(&presentParameters);
 		if (FAILED(result))
 		{
 			ASSERT(result == D3DERR_OUTOFVIDEOMEMORY || result == E_OUTOFMEMORY || result == D3DERR_INVALIDCALL || result == D3DERR_DEVICELOST);
@@ -220,43 +210,17 @@ bool SwapChain9::createFullscreen(int& backbufferWidth, int& backbufferHeight, D
 			}
 			else
 			{
-				std::ofstream fStream("angle.log");
-				fStream << presentParameters.AutoDepthStencilFormat << '\n'
-					<< presentParameters.BackBufferCount << '\n'
-					<< presentParameters.BackBufferFormat << '\n'
-					<< presentParameters.EnableAutoDepthStencil << '\n'
-					<< presentParameters.hDeviceWindow << '\n'
-					<< presentParameters.Flags << '\n'
-					<< presentParameters.MultiSampleQuality << '\n'
-					<< presentParameters.MultiSampleType << '\n'
-					<< presentParameters.PresentationInterval << '\n'
-					<< presentParameters.SwapEffect << '\n'
-					<< presentParameters.Windowed << '\n'
-					<< presentParameters.BackBufferWidth << '\n'
-					<< presentParameters.BackBufferHeight << '\n'
-					<< presentParameters.FullScreen_RefreshRateInHz << '\n';
-				fStream.close();
-
 				error = EGL_BAD_ALLOC;
 				return false;
 			}
 		}
 
-		result = mSwapChain->GetBackBuffer(0, D3DBACKBUFFER_TYPE_MONO, &mBackBuffer);
-		ASSERT(SUCCEEDED(result));
-		InvalidateRect(window, NULL, FALSE);
-	}
-
-	if (mDepthBufferFormat != GL_NONE)
-	{
-		result = device->CreateDepthStencilSurface(backbufferWidth, backbufferHeight, depthFormatInfo, D3DMULTISAMPLE_NONE, 0, FALSE, &mDepthStencil, NULL);
-
+		device->GetSwapChain(0, &mSwapChain);
 		if (FAILED(result))
 		{
-			ASSERT(result == D3DERR_OUTOFVIDEOMEMORY || result == E_OUTOFMEMORY || result == D3DERR_INVALIDCALL);
+			ASSERT(result == D3DERR_OUTOFVIDEOMEMORY || result == E_OUTOFMEMORY || result == D3DERR_INVALIDCALL || result == D3DERR_DEVICELOST);
 
-			ERR("Could not create depthstencil surface for new swap chain: 0x%08X", result);
-
+			ERR("Could not get swapchain: %08lX", result);
 			release();
 
 			if (d3d9::isDeviceLostError(result))
@@ -270,11 +234,31 @@ bool SwapChain9::createFullscreen(int& backbufferWidth, int& backbufferHeight, D
 				return false;
 			}
 		}
-	}
 
-	std::ofstream fStream("angle.log");
-	fStream << "Created fullsreen!" << std::endl;
-	fStream.close();
+		device->GetDepthStencilSurface(&mDepthStencil);
+		if (FAILED(result))
+		{
+			ASSERT(result == D3DERR_OUTOFVIDEOMEMORY || result == E_OUTOFMEMORY || result == D3DERR_INVALIDCALL);
+
+			ERR("Could not get depthstencil surface: 0x%08X", result);
+			release();
+
+			if (d3d9::isDeviceLostError(result))
+			{
+				error = EGL_CONTEXT_LOST;
+				return false;
+			}
+			else
+			{
+				error = EGL_BAD_ALLOC;
+				return false;
+			}
+		}
+
+		result = mSwapChain->GetBackBuffer(0, D3DBACKBUFFER_TYPE_MONO, &mBackBuffer);
+		ASSERT(SUCCEEDED(result));
+		InvalidateRect(window, NULL, FALSE);
+	}
 
 	return true;
 }

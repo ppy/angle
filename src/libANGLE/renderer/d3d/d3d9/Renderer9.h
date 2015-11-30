@@ -254,6 +254,8 @@ class Renderer9 : public RendererD3D
 
 	IDirect3D9* getD3D9() const { return mD3d9; }
 
+	HWND getDeviceWindow() const { return mDeviceWindow; }
+
   protected:
     void createAnnotator() override;
     gl::Error clearTextures(gl::SamplerType samplerType, size_t rangeStart, size_t rangeEnd) override;
