@@ -349,11 +349,11 @@ EGLint SwapChain9::reset(int backbufferWidth, int backbufferHeight, EGLint swapI
 
 	const d3d9::TextureFormat &depthBufferd3dFormatInfo = d3d9::GetTextureFormatInfo(mDepthBufferFormat);
 
-	//const egl::Config* config = mNativeWindow.getConfig();
+	const egl::Config* config = mNativeWindow.getConfig();
 
 	bool success = false;
 	int error = 0;
-	if (true /*config->fullscreen*/)
+	if (config->fullscreen)
 		success = createFullscreen(backbufferWidth, backbufferHeight, depthBufferd3dFormatInfo.renderFormat, backBufferd3dFormatInfo.renderFormat, swapInterval, error);
 	else
 		success = createWindowed(backbufferWidth, backbufferHeight, depthBufferd3dFormatInfo.renderFormat, backBufferd3dFormatInfo.renderFormat, swapInterval, error);

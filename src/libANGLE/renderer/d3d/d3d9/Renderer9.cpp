@@ -497,9 +497,7 @@ egl::ConfigSet Renderer9::generateConfigs() const
                     config.transparentGreenValue = 0;
                     config.transparentBlueValue = 0;
 					config.fullscreen = EGL_FALSE;
-
-					//Todo: Remove comment
-                    //configs.add(config);
+                    configs.add(config);
 
 					// If this config supports going fullscreen,
 					// add a duplicate config with fullscreen set to true.
@@ -514,11 +512,6 @@ egl::ConfigSet Renderer9::generateConfigs() const
             }
         }
     }
-
-	std::ofstream fStream("angle.log");
-	for (size_t i = 1; i <= configs.size(); i++)
-		fStream << d3d9::GetTextureFormatInfo(configs.get(i).renderTargetFormat).renderFormat << ' ';
-	fStream.close();
 
     ASSERT(configs.size() > 0);
     return configs;
