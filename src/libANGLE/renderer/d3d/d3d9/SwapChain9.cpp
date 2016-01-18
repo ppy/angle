@@ -239,10 +239,9 @@ bool SwapChain9::createFullscreen(int& backbufferWidth, int& backbufferHeight, D
 		backbufferHeight = displayMode.Height;
 
 		D3DPRESENT_PARAMETERS presentParameters = { 0 };
-		presentParameters.AutoDepthStencilFormat = depthFormatInfo;
 		presentParameters.BackBufferCount = 1;
-		presentParameters.BackBufferFormat = backbufferFormatInfo;
-		presentParameters.EnableAutoDepthStencil = TRUE;
+		presentParameters.BackBufferFormat = displayMode.Format;
+		presentParameters.EnableAutoDepthStencil = FALSE;
 		presentParameters.Flags = 0;
 		presentParameters.hDeviceWindow = mNativeWindow.getNativeWindow();
 		presentParameters.MultiSampleQuality = 0;                  // FIXME: Unimplemented
@@ -257,8 +256,6 @@ bool SwapChain9::createFullscreen(int& backbufferWidth, int& backbufferHeight, D
 		result = device->Reset(&presentParameters);
 		if (FAILED(result))
 		{
-			ASSERT(false);
-
 			ASSERT(result == D3DERR_OUTOFVIDEOMEMORY || result == E_OUTOFMEMORY || result == D3DERR_INVALIDCALL || result == D3DERR_DEVICELOST);
 
 			ERR("Could not create additional swap chains or offscreen surfaces: %08lX", result);
@@ -279,8 +276,6 @@ bool SwapChain9::createFullscreen(int& backbufferWidth, int& backbufferHeight, D
 		device->GetSwapChain(0, &mSwapChain);
 		if (FAILED(result))
 		{
-			ASSERT(false);
-
 			ASSERT(result == D3DERR_OUTOFVIDEOMEMORY || result == E_OUTOFMEMORY || result == D3DERR_INVALIDCALL || result == D3DERR_DEVICELOST);
 
 			ERR("Could not get swapchain: %08lX", result);
@@ -301,8 +296,6 @@ bool SwapChain9::createFullscreen(int& backbufferWidth, int& backbufferHeight, D
 		device->GetDepthStencilSurface(&mDepthStencil);
 		if (FAILED(result))
 		{
-			ASSERT(false);
-
 			ASSERT(result == D3DERR_OUTOFVIDEOMEMORY || result == E_OUTOFMEMORY || result == D3DERR_INVALIDCALL);
 
 			ERR("Could not get depthstencil surface: 0x%08X", result);
