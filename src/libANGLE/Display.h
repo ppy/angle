@@ -42,6 +42,8 @@ class Display final : angle::NonCopyable
     ~Display();
 
     Error initialize();
+	Error initializeFullscreen(EGLNativeWindowType win);
+
     void terminate();
 
     static egl::Display *getDisplay(EGLNativeDisplayType displayId, const AttributeMap &attribMap);

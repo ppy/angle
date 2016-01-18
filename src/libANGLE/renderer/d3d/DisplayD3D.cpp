@@ -141,6 +141,98 @@ egl::Error CreateRendererD3D(egl::Display *display, RendererD3D **outRenderer)
     return result;
 }
 
+egl::Error CreateRendererD3DFullscreen(egl::Display *display, RendererD3D **outRenderer, EGLNativeWindowType win)
+{
+	ASSERT(outRenderer != nullptr);
+
+	std::vector<CreateRendererD3DFunction> rendererCreationFunctions;
+
+	const auto &attribMap = display->getAttributeMap();
+	EGLNativeDisplayType nativeDisplay = display->getNativeDisplayId();
+
+	EGLint requestedDisplayType = attribMap.get(EGL_PLATFORM_ANGLE_TYPE_ANGLE, EGL_PLATFORM_ANGLE_TYPE_DEFAULT_ANGLE);
+
+#   if defined(ANGLE_ENABLE_D3D11)
+	if (nativeDisplay == EGL_D3D11_ELSE_D3D9_DISPLAY_ANGLE ||
+		nativeDisplay == EGL_D3D11_ONLY_DISPLAY_ANGLE ||
+		requestedDisplayType == EGL_PLATFORM_ANGLE_TYPE_D3D11_ANGLE)
+	{
+		rendererCreationFunctions.push_back(CreateTypedRendererD3D<Renderer11>);
+	}
+#   endif
+
+#   if defined(ANGLE_ENABLE_D3D9)
+	if (nativeDisplay == EGL_D3D11_ELSE_D3D9_DISPLAY_ANGLE ||
+		requestedDisplayType == EGL_PLATFORM_ANGLE_TYPE_D3D9_ANGLE)
+	{
+		rendererCreationFunctions.push_back(CreateTypedRendererD3D<Renderer9>);
+	}
+#   endif
+
+	if (nativeDisplay != EGL_D3D11_ELSE_D3D9_DISPLAY_ANGLE &&
+		nativeDisplay != EGL_D3D11_ONLY_DISPLAY_ANGLE &&
+		requestedDisplayType == EGL_PLATFORM_ANGLE_TYPE_DEFAULT_ANGLE)
+	{
+		// The default display is requested, try the D3D9 and D3D11 renderers, order them using
+		// the definition of ANGLE_DEFAULT_D3D11
+#       if ANGLE_DEFAULT_D3D11
+#           if defined(ANGLE_ENABLE_D3D11)
+		rendererCreationFunctions.push_back(CreateTypedRendererD3D<Renderer11>);
+#           endif
+#           if defined(ANGLE_ENABLE_D3D9)
+		rendererCreationFunctions.push_back(CreateTypedRendererD3D<Renderer9>);
+#           endif
+#       else
+#           if defined(ANGLE_ENABLE_D3D9)
+		rendererCreationFunctions.push_back(CreateTypedRendererD3D<Renderer9>);
+#           endif
+#           if defined(ANGLE_ENABLE_D3D11)
+		rendererCreationFunctions.push_back(CreateTypedRendererD3D<Renderer11>);
+#           endif
+#       endif
+	}
+
+	egl::Error result(EGL_NOT_INITIALIZED, "No available renderers.");
+	for (size_t i = 0; i < rendererCreationFunctions.size(); i++)
+	{
+		RendererD3D *renderer = rendererCreationFunctions[i](display);
+		result = renderer->initializeFullscreen(win);
+
+#       if defined(ANGLE_ENABLE_D3D11)
+		if (renderer->getRendererClass() == RENDERER_D3D11)
+		{
+			ASSERT(result.getID() >= 0 && result.getID() < NUM_D3D11_INIT_ERRORS);
+			ANGLE_HISTOGRAM_ENUMERATION("GPU.ANGLE.D3D11InitializeResult",
+				result.getID(),
+				NUM_D3D11_INIT_ERRORS);
+		}
+#       endif
+
+#       if defined(ANGLE_ENABLE_D3D9)
+		if (renderer->getRendererClass() == RENDERER_D3D9)
+		{
+			ASSERT(result.getID() >= 0 && result.getID() < NUM_D3D9_INIT_ERRORS);
+			ANGLE_HISTOGRAM_ENUMERATION("GPU.ANGLE.D3D9InitializeResult",
+				result.getID(),
+				NUM_D3D9_INIT_ERRORS);
+		}
+#       endif
+
+		if (!result.isError())
+		{
+			*outRenderer = renderer;
+			break;
+		}
+		else
+		{
+			// Failed to create the renderer, try the next
+			SafeDelete(renderer);
+		}
+	}
+
+	return result;
+}
+
 DisplayD3D::DisplayD3D() : mRenderer(nullptr)
 {
 }
@@ -239,6 +331,19 @@ egl::Error DisplayD3D::initialize(egl::Display *display)
     }
 
     return egl::Error(EGL_SUCCESS);
+}
+
+egl::Error DisplayD3D::initializeFullscreen(egl::Display *display, EGLNativeWindowType win)
+{
+	ASSERT(mRenderer == nullptr && display != nullptr);
+	mDisplay = display;
+	egl::Error error = CreateRendererD3DFullscreen(display, &mRenderer, win);
+	if (error.isError())
+	{
+		return error;
+	}
+
+	return egl::Error(EGL_SUCCESS);
 }
 
 void DisplayD3D::terminate()

@@ -46,6 +46,8 @@ class DisplayImpl : angle::NonCopyable
     virtual ~DisplayImpl();
 
     virtual egl::Error initialize(egl::Display *display) = 0;
+	virtual egl::Error initializeFullscreen(egl::Display *display, EGLNativeWindowType win) { return egl::Error(EGL_SUCCESS); }
+
     virtual void terminate() = 0;
 
     virtual SurfaceImpl *createWindowSurface(const egl::Config *configuration,

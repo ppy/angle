@@ -72,9 +72,68 @@ static DWORD convertInterval(EGLint interval)
 
 bool SwapChain9::createWindowed(int backbufferWidth, int backbufferHeight, D3DFORMAT depthFormatInfo, D3DFORMAT backbufferFormatInfo, EGLint swapInterval, int& error)
 {
-	IDirect3DDevice9 *device = mRenderer->getDevice();
+	HANDLE *pShareHandle = NULL;
+	if (!mNativeWindow.getNativeWindow() && mRenderer->getShareHandleSupport())
+	{
+		pShareHandle = &mShareHandle;
+	}
 
-	HRESULT result;
+	const d3d9::TextureFormat &backBufferd3dFormatInfo = d3d9::GetTextureFormatInfo(mOffscreenRenderTargetFormat);
+
+	HRESULT result = mRenderer->getDevice()->CreateTexture(backbufferWidth, backbufferHeight, 1, D3DUSAGE_RENDERTARGET,
+		backBufferd3dFormatInfo.texFormat, D3DPOOL_DEFAULT, &mOffscreenTexture,
+		pShareHandle);
+	if (FAILED(result))
+	{
+		ASSERT(false);
+
+		ERR("Could not create offscreen texture: %08lX", result);
+		release();
+
+		if (d3d9::isDeviceLostError(result))
+		{
+			error = EGL_CONTEXT_LOST;
+			return false;
+		}
+		else
+		{
+			error = EGL_BAD_ALLOC;
+			return false;
+		}
+	}
+
+	IDirect3DSurface9 *oldRenderTarget = mRenderTarget;
+
+	result = mOffscreenTexture->GetSurfaceLevel(0, &mRenderTarget);
+	ASSERT(SUCCEEDED(result));
+
+	if (oldRenderTarget)
+	{
+		RECT rect =
+		{
+			0, 0,
+			mWidth, mHeight
+		};
+
+		if (rect.right > static_cast<LONG>(backbufferWidth))
+		{
+			rect.right = backbufferWidth;
+		}
+
+		if (rect.bottom > static_cast<LONG>(backbufferHeight))
+		{
+			rect.bottom = backbufferHeight;
+		}
+
+		mRenderer->endScene();
+
+		result = mRenderer->getDevice()->StretchRect(oldRenderTarget, &rect, mRenderTarget, &rect, D3DTEXF_NONE);
+		ASSERT(SUCCEEDED(result));
+
+		SafeRelease(oldRenderTarget);
+	}
+
+	IDirect3DDevice9 *device = mRenderer->getDevice();
 
 	// Don't create a swapchain for NULLREF devices
 	D3DDEVTYPE deviceType = mRenderer->getD3D9DeviceType();
@@ -185,7 +244,7 @@ bool SwapChain9::createFullscreen(int& backbufferWidth, int& backbufferHeight, D
 		presentParameters.BackBufferFormat = backbufferFormatInfo;
 		presentParameters.EnableAutoDepthStencil = TRUE;
 		presentParameters.Flags = 0;
-		presentParameters.hDeviceWindow = mRenderer->getDeviceWindow();
+		presentParameters.hDeviceWindow = mNativeWindow.getNativeWindow();
 		presentParameters.MultiSampleQuality = 0;                  // FIXME: Unimplemented
 		presentParameters.MultiSampleType = D3DMULTISAMPLE_NONE;   // FIXME: Unimplemented
 		presentParameters.PresentationInterval = convertInterval(swapInterval);
@@ -198,6 +257,8 @@ bool SwapChain9::createFullscreen(int& backbufferWidth, int& backbufferHeight, D
 		result = device->Reset(&presentParameters);
 		if (FAILED(result))
 		{
+			ASSERT(false);
+
 			ASSERT(result == D3DERR_OUTOFVIDEOMEMORY || result == E_OUTOFMEMORY || result == D3DERR_INVALIDCALL || result == D3DERR_DEVICELOST);
 
 			ERR("Could not create additional swap chains or offscreen surfaces: %08lX", result);
@@ -218,6 +279,8 @@ bool SwapChain9::createFullscreen(int& backbufferWidth, int& backbufferHeight, D
 		device->GetSwapChain(0, &mSwapChain);
 		if (FAILED(result))
 		{
+			ASSERT(false);
+
 			ASSERT(result == D3DERR_OUTOFVIDEOMEMORY || result == E_OUTOFMEMORY || result == D3DERR_INVALIDCALL || result == D3DERR_DEVICELOST);
 
 			ERR("Could not get swapchain: %08lX", result);
@@ -238,6 +301,8 @@ bool SwapChain9::createFullscreen(int& backbufferWidth, int& backbufferHeight, D
 		device->GetDepthStencilSurface(&mDepthStencil);
 		if (FAILED(result))
 		{
+			ASSERT(false);
+
 			ASSERT(result == D3DERR_OUTOFVIDEOMEMORY || result == E_OUTOFMEMORY || result == D3DERR_INVALIDCALL);
 
 			ERR("Could not get depthstencil surface: 0x%08X", result);
@@ -282,71 +347,14 @@ EGLint SwapChain9::reset(int backbufferWidth, int backbufferHeight, EGLint swapI
     // before reallocating them to free up as much video memory as possible.
     device->EvictManagedResources();
 
-    HRESULT result;
-
     // Release specific resources to free up memory for the new render target, while the
     // old render target still exists for the purpose of preserving its contents.
     SafeRelease(mSwapChain);
     SafeRelease(mBackBuffer);
     SafeRelease(mOffscreenTexture);
-    SafeRelease(mDepthStencil);
-
-    HANDLE *pShareHandle = NULL;
-    if (!mNativeWindow.getNativeWindow() && mRenderer->getShareHandleSupport())
-    {
-        pShareHandle = &mShareHandle;
-    }
+	SafeRelease(mDepthStencil);
 
     const d3d9::TextureFormat &backBufferd3dFormatInfo = d3d9::GetTextureFormatInfo(mOffscreenRenderTargetFormat);
-    result = device->CreateTexture(backbufferWidth, backbufferHeight, 1, D3DUSAGE_RENDERTARGET,
-                                   backBufferd3dFormatInfo.texFormat, D3DPOOL_DEFAULT, &mOffscreenTexture,
-                                   pShareHandle);
-    if (FAILED(result))
-    {
-        ERR("Could not create offscreen texture: %08lX", result);
-        release();
-
-        if (d3d9::isDeviceLostError(result))
-        {
-            return EGL_CONTEXT_LOST;
-        }
-        else
-        {
-            return EGL_BAD_ALLOC;
-        }
-    }
-
-    IDirect3DSurface9 *oldRenderTarget = mRenderTarget;
-
-    result = mOffscreenTexture->GetSurfaceLevel(0, &mRenderTarget);
-    ASSERT(SUCCEEDED(result));
-
-    if (oldRenderTarget)
-    {
-        RECT rect =
-        {
-            0, 0,
-            mWidth, mHeight
-        };
-
-        if (rect.right > static_cast<LONG>(backbufferWidth))
-        {
-            rect.right = backbufferWidth;
-        }
-
-        if (rect.bottom > static_cast<LONG>(backbufferHeight))
-        {
-            rect.bottom = backbufferHeight;
-        }
-
-        mRenderer->endScene();
-
-        result = device->StretchRect(oldRenderTarget, &rect, mRenderTarget, &rect, D3DTEXF_NONE);
-        ASSERT(SUCCEEDED(result));
-
-        SafeRelease(oldRenderTarget);
-    }
-
 	const d3d9::TextureFormat &depthBufferd3dFormatInfo = d3d9::GetTextureFormatInfo(mDepthBufferFormat);
 
 	const egl::Config* config = mNativeWindow.getConfig();
@@ -446,6 +454,8 @@ EGLint SwapChain9::swapRect(EGLint x, EGLint y, EGLint width, EGLint height)
 
     if (result == D3DERR_OUTOFVIDEOMEMORY || result == E_OUTOFMEMORY || result == D3DERR_DRIVERINTERNALERROR)
     {
+		ASSERT(false);
+
         return EGL_BAD_ALLOC;
     }
 
