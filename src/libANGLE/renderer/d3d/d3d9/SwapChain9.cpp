@@ -70,69 +70,8 @@ static DWORD convertInterval(EGLint interval)
 #endif
 }
 
-bool SwapChain9::createWindowed(int backbufferWidth, int backbufferHeight, D3DFORMAT depthFormatInfo, D3DFORMAT backbufferFormatInfo, EGLint swapInterval, int& error)
+bool SwapChain9::createWindowed(D3DPRESENT_PARAMETERS &presentParameters, int backbufferWidth, int backbufferHeight, int& error)
 {
-	HANDLE *pShareHandle = NULL;
-	if (!mNativeWindow.getNativeWindow() && mRenderer->getShareHandleSupport())
-	{
-		pShareHandle = &mShareHandle;
-	}
-
-	const d3d9::TextureFormat &backBufferd3dFormatInfo = d3d9::GetTextureFormatInfo(mOffscreenRenderTargetFormat);
-
-	HRESULT result = mRenderer->getDevice()->CreateTexture(backbufferWidth, backbufferHeight, 1, D3DUSAGE_RENDERTARGET,
-		backBufferd3dFormatInfo.texFormat, D3DPOOL_DEFAULT, &mOffscreenTexture,
-		pShareHandle);
-	if (FAILED(result))
-	{
-		ASSERT(false);
-
-		ERR("Could not create offscreen texture: %08lX", result);
-		release();
-
-		if (d3d9::isDeviceLostError(result))
-		{
-			error = EGL_CONTEXT_LOST;
-			return false;
-		}
-		else
-		{
-			error = EGL_BAD_ALLOC;
-			return false;
-		}
-	}
-
-	IDirect3DSurface9 *oldRenderTarget = mRenderTarget;
-
-	result = mOffscreenTexture->GetSurfaceLevel(0, &mRenderTarget);
-	ASSERT(SUCCEEDED(result));
-
-	if (oldRenderTarget)
-	{
-		RECT rect =
-		{
-			0, 0,
-			mWidth, mHeight
-		};
-
-		if (rect.right > static_cast<LONG>(backbufferWidth))
-		{
-			rect.right = backbufferWidth;
-		}
-
-		if (rect.bottom > static_cast<LONG>(backbufferHeight))
-		{
-			rect.bottom = backbufferHeight;
-		}
-
-		mRenderer->endScene();
-
-		result = mRenderer->getDevice()->StretchRect(oldRenderTarget, &rect, mRenderTarget, &rect, D3DTEXF_NONE);
-		ASSERT(SUCCEEDED(result));
-
-		SafeRelease(oldRenderTarget);
-	}
-
 	IDirect3DDevice9 *device = mRenderer->getDevice();
 
 	// Don't create a swapchain for NULLREF devices
@@ -140,16 +79,11 @@ bool SwapChain9::createWindowed(int backbufferWidth, int backbufferHeight, D3DFO
 	EGLNativeWindowType window = mNativeWindow.getNativeWindow();
 	if (window && deviceType != D3DDEVTYPE_NULLREF)
 	{
-		D3DPRESENT_PARAMETERS presentParameters = { 0 };
-		presentParameters.AutoDepthStencilFormat = depthFormatInfo;
 		presentParameters.BackBufferCount = 1;
-		presentParameters.BackBufferFormat = backbufferFormatInfo;
-		presentParameters.EnableAutoDepthStencil = FALSE;
 		presentParameters.Flags = 0;
 		presentParameters.hDeviceWindow = window;
 		presentParameters.MultiSampleQuality = 0;                  // FIXME: Unimplemented
 		presentParameters.MultiSampleType = D3DMULTISAMPLE_NONE;   // FIXME: Unimplemented
-		presentParameters.PresentationInterval = convertInterval(swapInterval);
 		presentParameters.SwapEffect = D3DSWAPEFFECT_DISCARD;
 		presentParameters.Windowed = TRUE;
 		presentParameters.BackBufferWidth = backbufferWidth;
@@ -168,7 +102,7 @@ bool SwapChain9::createWindowed(int backbufferWidth, int backbufferHeight, D3DFO
 			presentParameters.BackBufferWidth = (presentParameters.BackBufferWidth + 63) / 64 * 64;
 		}
 
-		result = device->CreateAdditionalSwapChain(&presentParameters, &mSwapChain);
+		HRESULT result = device->CreateAdditionalSwapChain(&presentParameters, &mSwapChain);
 
 		if (FAILED(result))
 		{
@@ -196,7 +130,9 @@ bool SwapChain9::createWindowed(int backbufferWidth, int backbufferHeight, D3DFO
 
 	if (mDepthBufferFormat != GL_NONE)
 	{
-		result = device->CreateDepthStencilSurface(backbufferWidth, backbufferHeight, depthFormatInfo, D3DMULTISAMPLE_NONE, 0, FALSE, &mDepthStencil, NULL);
+		HRESULT result = device->CreateDepthStencilSurface(presentParameters.BackBufferWidth, presentParameters.BackBufferHeight,
+			                                       presentParameters.AutoDepthStencilFormat, presentParameters.MultiSampleType,
+												   presentParameters.MultiSampleQuality, FALSE, &mDepthStencil, NULL);
 
 		if (FAILED(result))
 		{
@@ -221,7 +157,7 @@ bool SwapChain9::createWindowed(int backbufferWidth, int backbufferHeight, D3DFO
 	return true;
 }
 
-bool SwapChain9::createFullscreen(int& backbufferWidth, int& backbufferHeight, D3DFORMAT depthFormatInfo, D3DFORMAT backbufferFormatInfo, EGLint swapInterval, int& error)
+bool SwapChain9::createFullscreen(D3DPRESENT_PARAMETERS &presentParameters, int& error)
 {
 	IDirect3DDevice9 *device = mRenderer->getDevice();
 
@@ -235,22 +171,17 @@ bool SwapChain9::createFullscreen(int& backbufferWidth, int& backbufferHeight, D
 	EGLNativeWindowType window = mNativeWindow.getNativeWindow();
 	if (window && deviceType != D3DDEVTYPE_NULLREF)
 	{
-		backbufferWidth = displayMode.Width;
-		backbufferHeight = displayMode.Height;
-
-		D3DPRESENT_PARAMETERS presentParameters = { 0 };
 		presentParameters.BackBufferCount = 1;
-		presentParameters.BackBufferFormat = displayMode.Format;
-		presentParameters.EnableAutoDepthStencil = FALSE;
+		//presentParameters.BackBufferFormat = displayMode.Format;
+		presentParameters.EnableAutoDepthStencil = TRUE;
 		presentParameters.Flags = 0;
 		presentParameters.hDeviceWindow = mNativeWindow.getNativeWindow();
 		presentParameters.MultiSampleQuality = 0;                  // FIXME: Unimplemented
 		presentParameters.MultiSampleType = D3DMULTISAMPLE_NONE;   // FIXME: Unimplemented
-		presentParameters.PresentationInterval = convertInterval(swapInterval);
 		presentParameters.SwapEffect = D3DSWAPEFFECT_DISCARD;
 		presentParameters.Windowed = FALSE;
-		presentParameters.BackBufferWidth = backbufferWidth;
-		presentParameters.BackBufferHeight = backbufferHeight;
+		presentParameters.BackBufferWidth = displayMode.Width;
+		presentParameters.BackBufferHeight = displayMode.Height;
 		presentParameters.FullScreen_RefreshRateInHz = displayMode.RefreshRate;
 
 		result = device->Reset(&presentParameters);
@@ -347,23 +278,86 @@ EGLint SwapChain9::reset(int backbufferWidth, int backbufferHeight, EGLint swapI
     SafeRelease(mOffscreenTexture);
 	SafeRelease(mDepthStencil);
 
-    const d3d9::TextureFormat &backBufferd3dFormatInfo = d3d9::GetTextureFormatInfo(mOffscreenRenderTargetFormat);
-	const d3d9::TextureFormat &depthBufferd3dFormatInfo = d3d9::GetTextureFormatInfo(mDepthBufferFormat);
+    const d3d9::TextureFormat &backBuffered3dFormatInfo = d3d9::GetTextureFormatInfo(mOffscreenRenderTargetFormat);
+	const d3d9::TextureFormat &depthBuffered3dFormatInfo = d3d9::GetTextureFormatInfo(mDepthBufferFormat);
+
+	D3DPRESENT_PARAMETERS presentParameters = { 0 };
+	presentParameters.PresentationInterval = convertInterval(swapInterval);
+	presentParameters.BackBufferFormat = backBuffered3dFormatInfo.renderFormat;
+	presentParameters.AutoDepthStencilFormat = depthBuffered3dFormatInfo.renderFormat;
+	presentParameters.EnableAutoDepthStencil = FALSE;
 
 	const egl::Config* config = mNativeWindow.getConfig();
-
+	
 	bool success = false;
 	int error = 0;
 	if (config->fullscreen)
-		success = createFullscreen(backbufferWidth, backbufferHeight, depthBufferd3dFormatInfo.renderFormat, backBufferd3dFormatInfo.renderFormat, swapInterval, error);
+		success = createFullscreen(presentParameters, error);
 	else
-		success = createWindowed(backbufferWidth, backbufferHeight, depthBufferd3dFormatInfo.renderFormat, backBufferd3dFormatInfo.renderFormat, swapInterval, error);
+		success = createWindowed(presentParameters, backbufferWidth, backbufferHeight, error);
 
 	if (!success)
 		return error;
 
-    mWidth = backbufferWidth;
-    mHeight = backbufferHeight;
+	HANDLE *pShareHandle = NULL;
+	if (!mNativeWindow.getNativeWindow() && mRenderer->getShareHandleSupport())
+		pShareHandle = &mShareHandle;
+
+	HRESULT result = mRenderer->getDevice()->CreateTexture(presentParameters.BackBufferWidth, presentParameters.BackBufferHeight, 1, D3DUSAGE_RENDERTARGET,
+                                                           backBuffered3dFormatInfo.texFormat, D3DPOOL_DEFAULT, &mOffscreenTexture, pShareHandle);
+	if (FAILED(result))
+	{
+		ASSERT(false);
+
+		ERR("Could not create offscreen texture: %08lX", result);
+		release();
+
+		if (d3d9::isDeviceLostError(result))
+		{
+			error = EGL_CONTEXT_LOST;
+			return false;
+		}
+		else
+		{
+			error = EGL_BAD_ALLOC;
+			return false;
+		}
+	}
+
+	IDirect3DSurface9 *oldRenderTarget = mRenderTarget;
+
+	result = mOffscreenTexture->GetSurfaceLevel(0, &mRenderTarget);
+	ASSERT(SUCCEEDED(result));
+
+	if (oldRenderTarget)
+	{
+		RECT rect =
+		{
+			0, 0,
+			mWidth, mHeight
+		};
+
+		if (rect.right > static_cast<LONG>(backbufferWidth))
+		{
+			rect.right = backbufferWidth;
+		}
+
+		if (rect.bottom > static_cast<LONG>(backbufferHeight))
+		{
+			rect.bottom = backbufferHeight;
+		}
+
+		mRenderer->endScene();
+
+		result = mRenderer->getDevice()->StretchRect(oldRenderTarget, &rect, mRenderTarget, &rect, D3DTEXF_NONE);
+		ASSERT(SUCCEEDED(result));
+
+		SafeRelease(oldRenderTarget);
+	}
+
+
+    mWidth = presentParameters.BackBufferWidth;
+	mHeight = presentParameters.BackBufferHeight;
     mSwapInterval = swapInterval;
 
     return EGL_SUCCESS;

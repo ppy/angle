@@ -284,64 +284,6 @@ Error Display::initialize()
     return Error(EGL_SUCCESS);
 }
 
-Error Display::initializeFullscreen(EGLNativeWindowType win)
-{
-	// Re-initialize default platform if it's needed
-	InitDefaultPlatformImpl();
-
-	SCOPED_ANGLE_HISTOGRAM_TIMER("GPU.ANGLE.DisplayInitializeMS");
-	TRACE_EVENT0("gpu.angle", "egl::Display::initialize");
-
-	ASSERT(mImplementation != nullptr);
-
-	if (isInitialized())
-	{
-		return Error(EGL_SUCCESS);
-	}
-
-	Error error = mImplementation->initializeFullscreen(this, win);
-	if (error.isError())
-	{
-		// Log extended error message here
-		std::stringstream errorStream;
-		errorStream << "ANGLE Display::initialize error " << error.getID() << ": "
-			<< error.getMessage();
-		ANGLEPlatformCurrent()->logError(errorStream.str().c_str());
-		return error;
-	}
-
-	mCaps = mImplementation->getCaps();
-
-	mConfigSet = mImplementation->generateConfigs();
-	if (mConfigSet.size() == 0)
-	{
-		mImplementation->terminate();
-		return Error(EGL_NOT_INITIALIZED);
-	}
-
-	initDisplayExtensions();
-	initVendorString();
-
-	if (mDisplayExtensions.deviceQuery)
-	{
-		rx::DeviceImpl *impl = nullptr;
-		error = mImplementation->getDevice(&impl);
-		if (error.isError())
-		{
-			return error;
-		}
-		mDevice = new Device(this, impl);
-	}
-	else
-	{
-		mDevice = nullptr;
-	}
-
-	mInitialized = true;
-
-	return Error(EGL_SUCCESS);
-}
-
 void Display::terminate()
 {
     makeCurrent(nullptr, nullptr, nullptr);

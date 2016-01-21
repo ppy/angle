@@ -70,29 +70,6 @@ EGLBoolean EGLAPIENTRY Initialize(EGLDisplay dpy, EGLint *major, EGLint *minor)
     return EGL_TRUE;
 }
 
-EGLBoolean initializeFullscreen(EGLDisplay dpy, EGLNativeWindowType win)
-{
-	EVENT("(EGLDisplay dpy = 0x%0.8p, fullscreen)",
-		dpy);
-
-	Display *display = static_cast<Display *>(dpy);
-	if (dpy == EGL_NO_DISPLAY || !Display::isValidDisplay(display))
-	{
-		SetGlobalError(Error(EGL_BAD_DISPLAY));
-		return EGL_FALSE;
-	}
-
-	Error error = display->initializeFullscreen(win);
-	if (error.isError())
-	{
-		SetGlobalError(error);
-		return EGL_FALSE;
-	}
-
-	SetGlobalError(Error(EGL_SUCCESS));
-	return EGL_TRUE;
-}
-
 EGLBoolean EGLAPIENTRY Terminate(EGLDisplay dpy)
 {
     EVENT("(EGLDisplay dpy = 0x%0.8p)", dpy);
@@ -276,12 +253,6 @@ EGLSurface EGLAPIENTRY CreateWindowSurface(EGLDisplay dpy, EGLConfig config, EGL
         SetGlobalError(error);
         return EGL_NO_SURFACE;
     }
-
-	if (configuration->fullscreen)
-	{
-		Terminate(dpy);
-		initializeFullscreen(dpy, win);
-	}
 
     egl::Surface *surface = nullptr;
     error = display->createWindowSurface(configuration, win, attributes, &surface);

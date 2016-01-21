@@ -97,7 +97,6 @@ class RendererD3D : public Renderer, public BufferFactoryD3D
     virtual ~RendererD3D();
 
     virtual egl::Error initialize() = 0;
-	virtual egl::Error initializeFullscreen(EGLNativeWindowType win) { return egl::Error(EGL_SUCCESS); }
     virtual egl::ConfigSet generateConfigs() const = 0;
     virtual void generateDisplayExtensions(egl::DisplayExtensions *outExtensions) const = 0;
 

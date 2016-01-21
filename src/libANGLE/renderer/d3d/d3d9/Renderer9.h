@@ -67,7 +67,6 @@ class Renderer9 : public RendererD3D
     virtual ~Renderer9();
 
     egl::Error initialize() override;
-	egl::Error initializeFullscreen(EGLNativeWindowType win) override;
 
     virtual bool resetDevice();
 

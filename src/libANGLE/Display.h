@@ -42,7 +42,6 @@ class Display final : angle::NonCopyable
     ~Display();
 
     Error initialize();
-	Error initializeFullscreen(EGLNativeWindowType win);
 
     void terminate();
 

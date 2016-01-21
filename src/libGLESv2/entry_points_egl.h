@@ -69,8 +69,6 @@ ANGLE_EXPORT EGLSurface EGLAPIENTRY CreatePlatformWindowSurface(EGLDisplay dpy, 
 ANGLE_EXPORT EGLSurface EGLAPIENTRY CreatePlatformPixmapSurface(EGLDisplay dpy, EGLConfig config, void *native_pixmap, const EGLAttrib *attrib_list);
 ANGLE_EXPORT EGLBoolean EGLAPIENTRY WaitSync(EGLDisplay dpy, EGLSync sync, EGLint flags);
 
-EGLBoolean initializeFullscreen(EGLDisplay dpy, EGLNativeWindowType win);
-
 }
 
 #endif // LIBGLESV2_ENTRYPOINTSEGL_H_
