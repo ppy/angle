@@ -40,8 +40,9 @@ class SwapChain11 : public SwapChainD3D
     virtual ID3D11DepthStencilView *getDepthStencil();
     virtual ID3D11ShaderResourceView *getDepthStencilShaderResource();
 
-    EGLint getWidth() const { return mWidth; }
-    EGLint getHeight() const { return mHeight; }
+    virtual EGLint getWidth() const { return mWidth; }
+    virtual EGLint getHeight() const { return mHeight; }
+
     void *getKeyedMutex() override { return mKeyedMutex; }
 
   private:

@@ -429,13 +429,17 @@ EGLint SwapChain9::swapRect(EGLint x, EGLint y, EGLint width, EGLint height)
 
     device->SetTexture(0, NULL);
 
-    RECT rect =
-    {
-        static_cast<LONG>(x), static_cast<LONG>(mHeight - y - height),
-        static_cast<LONG>(x + width), static_cast<LONG>(mHeight - y)
-    };
+	/*RECT rect =
+	{
+	static_cast<LONG>(x), static_cast<LONG>(mHeight - y - height),
+	static_cast<LONG>(x + width), static_cast<LONG>(mHeight - y)
+	};*/
 
-    HRESULT result = mSwapChain->Present(&rect, &rect, NULL, NULL, 0);
+	// Todo: For some reason
+	// result = mSwapChain->Present(&rect, &rect, NULL, NULL, 0) doesn't work.
+	// idk if this needs to be fixed though (seems to be presenting the entire screen anyway?)
+
+	HRESULT result = mSwapChain->Present(NULL, NULL, NULL, NULL, 0);
 
     mRenderer->markAllStateDirty();
 

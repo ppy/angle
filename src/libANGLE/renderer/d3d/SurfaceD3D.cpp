@@ -184,8 +184,8 @@ egl::Error SurfaceD3D::resetSwapChain(int backbufferWidth, int backbufferHeight)
         return egl::Error(status);
     }
 
-    mWidth = backbufferWidth;
-    mHeight = backbufferHeight;
+    mWidth = mSwapChain->getWidth();
+	mHeight = mSwapChain->getHeight();
     mSwapIntervalDirty = false;
 
     return egl::Error(EGL_SUCCESS);
