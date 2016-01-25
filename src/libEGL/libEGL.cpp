@@ -227,6 +227,11 @@ EGLBoolean EGLAPIENTRY eglWaitSync(EGLDisplay dpy, EGLSync sync, EGLint flags)
     return egl::WaitSync(dpy, sync, flags);
 }
 
+void EGLAPIENTRY eglToggleWindowed()
+{
+	egl::ToggleWindowed();
+}
+
 EGLBoolean EGLAPIENTRY eglQuerySurfacePointerANGLE(EGLDisplay dpy, EGLSurface surface, EGLint attribute, void **value)
 {
     return egl::QuerySurfacePointerANGLE(dpy, surface, attribute, value);

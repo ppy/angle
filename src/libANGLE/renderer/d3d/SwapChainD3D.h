@@ -54,6 +54,8 @@ class SwapChainD3D : angle::NonCopyable
     HANDLE getShareHandle() { return mShareHandle; }
     virtual void *getKeyedMutex() = 0;
 
+	virtual void toggleWindowed() { }
+
   protected:
     rx::NativeWindow mNativeWindow;  // Handler for the Window that the surface is created for.
     const GLenum mOffscreenRenderTargetFormat;

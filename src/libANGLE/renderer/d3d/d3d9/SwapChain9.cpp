@@ -15,12 +15,12 @@
 namespace rx
 {
 
-SwapChain9::SwapChain9(Renderer9 *renderer, NativeWindow nativeWindow, HANDLE shareHandle,
-                       GLenum backBufferFormat, GLenum depthBufferFormat)
-    : SwapChainD3D(nativeWindow, shareHandle, backBufferFormat, depthBufferFormat),
-      mRenderer(renderer),
-      mColorRenderTarget(this, false),
-      mDepthStencilRenderTarget(this, true)
+SwapChain9::SwapChain9(Renderer9 *renderer, NativeWindow nativeWindow, HANDLE shareHandle, GLenum backBufferFormat, GLenum depthBufferFormat)
+	: SwapChainD3D(nativeWindow, shareHandle, backBufferFormat, depthBufferFormat),
+	mRenderer(renderer),
+	mColorRenderTarget(this, false),
+	mDepthStencilRenderTarget(this, true),
+	windowed(false)
 {
     mSwapChain = NULL;
     mBackBuffer = NULL;
@@ -102,8 +102,7 @@ bool SwapChain9::createWindowed(D3DPRESENT_PARAMETERS &presentParameters, int ba
 			presentParameters.BackBufferWidth = (presentParameters.BackBufferWidth + 63) / 64 * 64;
 		}
 
-		HRESULT result = device->CreateAdditionalSwapChain(&presentParameters, &mSwapChain);
-
+		HRESULT result = device->Reset(&presentParameters);
 		if (FAILED(result))
 		{
 			ASSERT(result == D3DERR_OUTOFVIDEOMEMORY || result == E_OUTOFMEMORY || result == D3DERR_INVALIDCALL || result == D3DERR_DEVICELOST);
@@ -123,22 +122,12 @@ bool SwapChain9::createWindowed(D3DPRESENT_PARAMETERS &presentParameters, int ba
 			}
 		}
 
-		result = mSwapChain->GetBackBuffer(0, D3DBACKBUFFER_TYPE_MONO, &mBackBuffer);
-		ASSERT(SUCCEEDED(result));
-		InvalidateRect(window, NULL, FALSE);
-	}
-
-	if (mDepthBufferFormat != GL_NONE)
-	{
-		HRESULT result = device->CreateDepthStencilSurface(presentParameters.BackBufferWidth, presentParameters.BackBufferHeight,
-			                                       presentParameters.AutoDepthStencilFormat, presentParameters.MultiSampleType,
-												   presentParameters.MultiSampleQuality, FALSE, &mDepthStencil, NULL);
-
+		result = device->GetSwapChain(0, &mSwapChain);
 		if (FAILED(result))
 		{
-			ASSERT(result == D3DERR_OUTOFVIDEOMEMORY || result == E_OUTOFMEMORY || result == D3DERR_INVALIDCALL);
+			ASSERT(result == D3DERR_OUTOFVIDEOMEMORY || result == E_OUTOFMEMORY || result == D3DERR_INVALIDCALL || result == D3DERR_DEVICELOST);
 
-			ERR("Could not create depthstencil surface for new swap chain: 0x%08X", result);
+			ERR("Could not get swapchain: %08lX", result);
 			release();
 
 			if (d3d9::isDeviceLostError(result))
@@ -152,6 +141,30 @@ bool SwapChain9::createWindowed(D3DPRESENT_PARAMETERS &presentParameters, int ba
 				return false;
 			}
 		}
+
+		result = device->GetDepthStencilSurface(&mDepthStencil);
+		if (FAILED(result))
+		{
+			ASSERT(result == D3DERR_OUTOFVIDEOMEMORY || result == E_OUTOFMEMORY || result == D3DERR_INVALIDCALL);
+
+			ERR("Could not get depthstencil surface: 0x%08X", result);
+			release();
+
+			if (d3d9::isDeviceLostError(result))
+			{
+				error = EGL_CONTEXT_LOST;
+				return false;
+			}
+			else
+			{
+				error = EGL_BAD_ALLOC;
+				return false;
+			}
+		}
+
+		result = mSwapChain->GetBackBuffer(0, D3DBACKBUFFER_TYPE_MONO, &mBackBuffer);
+		ASSERT(SUCCEEDED(result));
+		InvalidateRect(window, NULL, FALSE);
 	}
 
 	return true;
@@ -172,8 +185,6 @@ bool SwapChain9::createFullscreen(D3DPRESENT_PARAMETERS &presentParameters, int&
 	if (window && deviceType != D3DDEVTYPE_NULLREF)
 	{
 		presentParameters.BackBufferCount = 1;
-		//presentParameters.BackBufferFormat = displayMode.Format;
-		presentParameters.EnableAutoDepthStencil = TRUE;
 		presentParameters.Flags = 0;
 		presentParameters.hDeviceWindow = mNativeWindow.getNativeWindow();
 		presentParameters.MultiSampleQuality = 0;                  // FIXME: Unimplemented
@@ -204,7 +215,7 @@ bool SwapChain9::createFullscreen(D3DPRESENT_PARAMETERS &presentParameters, int&
 			}
 		}
 
-		device->GetSwapChain(0, &mSwapChain);
+		result = device->GetSwapChain(0, &mSwapChain);
 		if (FAILED(result))
 		{
 			ASSERT(result == D3DERR_OUTOFVIDEOMEMORY || result == E_OUTOFMEMORY || result == D3DERR_INVALIDCALL || result == D3DERR_DEVICELOST);
@@ -224,7 +235,7 @@ bool SwapChain9::createFullscreen(D3DPRESENT_PARAMETERS &presentParameters, int&
 			}
 		}
 
-		device->GetDepthStencilSurface(&mDepthStencil);
+		result = device->GetDepthStencilSurface(&mDepthStencil);
 		if (FAILED(result))
 		{
 			ASSERT(result == D3DERR_OUTOFVIDEOMEMORY || result == E_OUTOFMEMORY || result == D3DERR_INVALIDCALL);
@@ -285,13 +296,16 @@ EGLint SwapChain9::reset(int backbufferWidth, int backbufferHeight, EGLint swapI
 	presentParameters.PresentationInterval = convertInterval(swapInterval);
 	presentParameters.BackBufferFormat = backBuffered3dFormatInfo.renderFormat;
 	presentParameters.AutoDepthStencilFormat = depthBuffered3dFormatInfo.renderFormat;
-	presentParameters.EnableAutoDepthStencil = FALSE;
+	presentParameters.EnableAutoDepthStencil = TRUE;
 
 	const egl::Config* config = mNativeWindow.getConfig();
+
+	//Todo: Is this needed?
+	recreate();
 	
 	bool success = false;
 	int error = 0;
-	if (config->fullscreen)
+	if (config->fullscreen && !windowed)
 		success = createFullscreen(presentParameters, error);
 	else
 		success = createWindowed(presentParameters, backbufferWidth, backbufferHeight, error);
@@ -545,6 +559,11 @@ void SwapChain9::recreate()
     SafeRelease(mBackBuffer);
     result = mSwapChain->GetBackBuffer(0, D3DBACKBUFFER_TYPE_MONO, &mBackBuffer);
     ASSERT(SUCCEEDED(result));
+}
+
+void SwapChain9::toggleWindowed()
+{
+	windowed = !windowed;
 }
 
 }

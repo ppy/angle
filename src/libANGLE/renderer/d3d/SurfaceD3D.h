@@ -59,6 +59,8 @@ class SurfaceD3D : public SurfaceImpl
     gl::Error getAttachmentRenderTarget(const gl::FramebufferAttachment::Target &target,
                                         FramebufferAttachmentRenderTarget **rtOut) override;
 
+	void toggleWindowed() override;
+
   private:
     SurfaceD3D(RendererD3D *renderer, egl::Display *display, const egl::Config *config, EGLint width, EGLint height,
                EGLint fixedSize, EGLClientBuffer shareHandle, EGLNativeWindowType window);

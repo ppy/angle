@@ -340,4 +340,11 @@ gl::Error SurfaceD3D::getAttachmentRenderTarget(const gl::FramebufferAttachment:
     return gl::Error(GL_NO_ERROR);
 }
 
+void SurfaceD3D::toggleWindowed()
+{
+	mSwapChain->toggleWindowed();
+
+	resetSwapChain(mSwapChain->getWidth(), mSwapChain->getHeight());
+}
+
 }

@@ -34,6 +34,7 @@ EXPORTS
     eglWaitClient                    @16
     eglWaitGL                        @30
     eglWaitNative                    @31
+    eglToggleWindowed                @53
 
     ; Extensions
     eglGetPlatformDisplayEXT         @35

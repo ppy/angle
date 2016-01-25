@@ -40,6 +40,7 @@ ANGLE_EXPORT EGLBoolean EGLAPIENTRY SwapBuffers(EGLDisplay dpy, EGLSurface surfa
 ANGLE_EXPORT EGLBoolean EGLAPIENTRY Terminate(EGLDisplay dpy);
 ANGLE_EXPORT EGLBoolean EGLAPIENTRY WaitGL(void);
 ANGLE_EXPORT EGLBoolean EGLAPIENTRY WaitNative(EGLint engine);
+ANGLE_EXPORT void EGLAPIENTRY ToggleWindowed();
 
 // EGL 1.1
 ANGLE_EXPORT EGLBoolean EGLAPIENTRY BindTexImage(EGLDisplay dpy, EGLSurface surface, EGLint buffer);

@@ -41,6 +41,8 @@ class SwapChain9 : public SwapChainD3D
 
     void *getKeyedMutex() override;
 
+	void toggleWindowed() override;
+
   private:
     void release();
 
@@ -60,6 +62,8 @@ class SwapChain9 : public SwapChainD3D
 
     SurfaceRenderTarget9 mColorRenderTarget;
     SurfaceRenderTarget9 mDepthStencilRenderTarget;
+
+	bool windowed;
 };
 
 }
