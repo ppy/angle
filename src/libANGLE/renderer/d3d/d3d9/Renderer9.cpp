@@ -501,15 +501,12 @@ egl::ConfigSet Renderer9::generateConfigs() const
 
 					// If this config supports going fullscreen,
 					// add a duplicate config with fullscreen set to true.
-					if (currentDisplayMode.Format == d3d9ColorBufferFormatInfo.renderFormat)
+					HRESULT result = mD3d9->CheckDeviceType(mAdapter, mDeviceType, currentDisplayMode.Format, d3d9ColorBufferFormatInfo.renderFormat, false);
+					if (SUCCEEDED(result))
 					{
-						HRESULT result = mD3d9->CheckDeviceType(mAdapter, mDeviceType, currentDisplayMode.Format, currentDisplayMode.Format, false);
-						if (SUCCEEDED(result))
-						{
-							egl::Config fConfig(config);
-							fConfig.fullscreen = EGL_TRUE;
-							configs.add(fConfig);
-						}
+						egl::Config fConfig(config);
+						fConfig.fullscreen = EGL_TRUE;
+						configs.add(fConfig);
 					}
                 }
             }
