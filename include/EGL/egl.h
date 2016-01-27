@@ -143,6 +143,7 @@ EGLAPI EGLBoolean EGLAPIENTRY eglSwapBuffers (EGLDisplay dpy, EGLSurface surface
 EGLAPI EGLBoolean EGLAPIENTRY eglTerminate (EGLDisplay dpy);
 EGLAPI EGLBoolean EGLAPIENTRY eglWaitGL (void);
 EGLAPI EGLBoolean EGLAPIENTRY eglWaitNative (EGLint engine);
+EGLAPI void EGLAPIENTRY eglToggleWindowed();
 #endif /* EGL_VERSION_1_0 */
 
 #ifndef EGL_VERSION_1_1
