@@ -185,7 +185,7 @@ egl::Error SurfaceD3D::resetSwapChain(int backbufferWidth, int backbufferHeight)
     }
 
     mWidth = mSwapChain->getWidth();
-	mHeight = mSwapChain->getHeight();
+    mHeight = mSwapChain->getHeight();
     mSwapIntervalDirty = false;
 
     return egl::Error(EGL_SUCCESS);
@@ -342,9 +342,9 @@ gl::Error SurfaceD3D::getAttachmentRenderTarget(const gl::FramebufferAttachment:
 
 void SurfaceD3D::toggleWindowed()
 {
-	mSwapChain->toggleWindowed();
+    mSwapChain->toggleWindowed();
 
-	resetSwapChain(mSwapChain->getWidth(), mSwapChain->getHeight());
+    resetSwapChain(mSwapChain->getWidth(), mSwapChain->getHeight());
 }
 
 }

@@ -67,7 +67,6 @@ class Renderer9 : public RendererD3D
     virtual ~Renderer9();
 
     egl::Error initialize() override;
-
     virtual bool resetDevice();
 
     egl::ConfigSet generateConfigs() const override;
@@ -253,9 +252,9 @@ class Renderer9 : public RendererD3D
 
     D3DDEVTYPE getD3D9DeviceType() const { return mDeviceType; }
 
-	IDirect3D9* getD3D9() const { return mD3d9; }
+    IDirect3D9* getD3D9() const { return mD3d9; }
 
-	HWND getDeviceWindow() const { return mDeviceWindow; }
+    HWND getDeviceWindow() const { return mDeviceWindow; }
 
   protected:
     void createAnnotator() override;

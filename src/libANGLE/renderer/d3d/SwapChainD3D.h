@@ -45,8 +45,8 @@ class SwapChainD3D : angle::NonCopyable
     virtual RenderTargetD3D *getColorRenderTarget() = 0;
     virtual RenderTargetD3D *getDepthStencilRenderTarget() = 0;
 
-	virtual EGLint getWidth() const { return 0; }
-	virtual EGLint getHeight() const { return 0; }
+    EGLint getWidth() const { return 0; }
+    EGLint getHeight() const { return 0; }
 
     GLenum GetRenderTargetInternalFormat() const { return mOffscreenRenderTargetFormat; }
     GLenum GetDepthBufferInternalFormat() const { return mDepthBufferFormat; }
@@ -54,7 +54,7 @@ class SwapChainD3D : angle::NonCopyable
     HANDLE getShareHandle() { return mShareHandle; }
     virtual void *getKeyedMutex() = 0;
 
-	virtual void toggleWindowed() { }
+    virtual void toggleWindowed() { }
 
   protected:
     rx::NativeWindow mNativeWindow;  // Handler for the Window that the surface is created for.

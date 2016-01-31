@@ -47,7 +47,7 @@ class SurfaceImpl : public FramebufferAttachmentObjectImpl
     virtual EGLint isPostSubBufferSupported() const = 0;
     virtual EGLint getSwapBehavior() const = 0;
 
-	virtual void toggleWindowed() { }
+    virtual void toggleWindowed() { }
 };
 
 }

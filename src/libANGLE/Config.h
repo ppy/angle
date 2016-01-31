@@ -64,7 +64,7 @@ struct Config
     EGLint transparentRedValue;     // Transparent red value
     EGLint transparentGreenValue;   // Transparent green value
     EGLint transparentBlueValue;    // Transparent blue value
-	EGLBoolean fullscreen;          // True if the device is fullscreen
+    EGLBoolean fullscreen;          // True if the device is fullscreen
 };
 
 class ConfigSet

@@ -63,11 +63,11 @@ class NativeWindow
 
     inline EGLNativeWindowType getNativeWindow() const { return mWindow; }
 
-	const egl::Config* getConfig() const { return mConfig; }
+    const egl::Config* getConfig() const { return mConfig; }
 
   private:
     EGLNativeWindowType mWindow;
-	const egl::Config* mConfig;
+    const egl::Config* mConfig;
 
 #if defined(ANGLE_ENABLE_WINDOWS_STORE)
     const egl::Config *mConfig;

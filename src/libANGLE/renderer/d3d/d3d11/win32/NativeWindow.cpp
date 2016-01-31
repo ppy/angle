@@ -15,7 +15,7 @@ namespace rx
 {
 
 NativeWindow::NativeWindow(EGLNativeWindowType window, const egl::Config* config)
-	: mWindow(window), mConfig(config) // This is disgusting, but useful for avoiding upstream merge conflicts
+    : mWindow(window), mConfig(config)
 {
 }
 

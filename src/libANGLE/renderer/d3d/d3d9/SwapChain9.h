@@ -36,18 +36,18 @@ class SwapChain9 : public SwapChainD3D
     virtual IDirect3DSurface9 *getDepthStencil();
     virtual IDirect3DTexture9 *getOffscreenTexture();
 
-    virtual EGLint getWidth() const { return mWidth; }
-    virtual EGLint getHeight() const { return mHeight; }
+    EGLint getWidth() const { return mWidth; }
+    EGLint getHeight() const { return mHeight; }
 
     void *getKeyedMutex() override;
 
-	void toggleWindowed() override;
+    void toggleWindowed() override;
 
   private:
     void release();
 
-	bool createWindowed(D3DPRESENT_PARAMETERS &presentParameters, int backbufferWidth, int backbufferHeight, int& error);
-	bool createFullscreen(D3DPRESENT_PARAMETERS &presentParameters, int& error);
+    bool createWindowed(D3DPRESENT_PARAMETERS &presentParameters, int backbufferWidth, int backbufferHeight, int& error);
+    bool createFullscreen(D3DPRESENT_PARAMETERS &presentParameters, int& error);
 
     Renderer9 *mRenderer;
     EGLint mHeight;
@@ -63,7 +63,7 @@ class SwapChain9 : public SwapChainD3D
     SurfaceRenderTarget9 mColorRenderTarget;
     SurfaceRenderTarget9 mDepthStencilRenderTarget;
 
-	bool windowed;
+    bool windowed;
 };
 
 }

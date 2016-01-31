@@ -728,7 +728,7 @@ EGLBoolean EGLAPIENTRY WaitNative(EGLint engine)
 
 void EGLAPIENTRY ToggleWindowed()
 {
-	GetGlobalDrawSurface()->getImplementation()->toggleWindowed();
+    GetGlobalDrawSurface()->getImplementation()->toggleWindowed();
 }
 
 EGLBoolean EGLAPIENTRY SwapBuffers(EGLDisplay dpy, EGLSurface surface)

@@ -229,7 +229,7 @@ EGLBoolean EGLAPIENTRY eglWaitSync(EGLDisplay dpy, EGLSync sync, EGLint flags)
 
 void EGLAPIENTRY eglToggleWindowed()
 {
-	egl::ToggleWindowed();
+    egl::ToggleWindowed();
 }
 
 EGLBoolean EGLAPIENTRY eglQuerySurfacePointerANGLE(EGLDisplay dpy, EGLSurface surface, EGLint attribute, void **value)

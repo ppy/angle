@@ -42,7 +42,6 @@ class Display final : angle::NonCopyable
     ~Display();
 
     Error initialize();
-
     void terminate();
 
     static egl::Display *getDisplay(EGLNativeDisplayType displayId, const AttributeMap &attribMap);

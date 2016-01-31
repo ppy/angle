@@ -349,7 +349,7 @@ bool Display::getConfigAttrib(const Config *configuration, EGLint attribute, EGL
       case EGL_MAX_PBUFFER_WIDTH:         *value = configuration->maxPBufferWidth;        break;
       case EGL_MAX_PBUFFER_HEIGHT:        *value = configuration->maxPBufferHeight;       break;
       case EGL_MAX_PBUFFER_PIXELS:        *value = configuration->maxPBufferPixels;       break;
-	  case EGL_FULLSCREEN_ANGLE:          *value = configuration->fullscreen;             break;
+      case EGL_FULLSCREEN_ANGLE:          *value = configuration->fullscreen;             break;
       default:
         return false;
     }

@@ -22,7 +22,6 @@ class DisplayD3D : public DisplayImpl
     DisplayD3D();
 
     egl::Error initialize(egl::Display *display) override;
-
     virtual void terminate() override;
 
     // Surface creation

@@ -46,7 +46,6 @@ class DisplayImpl : angle::NonCopyable
     virtual ~DisplayImpl();
 
     virtual egl::Error initialize(egl::Display *display) = 0;
-
     virtual void terminate() = 0;
 
     virtual SurfaceImpl *createWindowSurface(const egl::Config *configuration,
