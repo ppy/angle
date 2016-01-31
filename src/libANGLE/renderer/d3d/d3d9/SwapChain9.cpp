@@ -149,9 +149,6 @@ EGLint SwapChain9::reset(int backbufferWidth, int backbufferHeight, EGLint swapI
         }
     }
 
-    //Todo: Is this needed?
-    recreate();
-
     // Don't create a swapchain for NULLREF devices
     if (window && deviceType != D3DDEVTYPE_NULLREF)
     {
