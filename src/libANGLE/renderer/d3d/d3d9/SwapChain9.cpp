@@ -20,7 +20,7 @@ SwapChain9::SwapChain9(Renderer9 *renderer, NativeWindow nativeWindow, HANDLE sh
     mRenderer(renderer),
     mColorRenderTarget(this, false),
     mDepthStencilRenderTarget(this, true),
-    windowed(false)
+    windowed(!nativeWindow.getConfig()->fullscreen)
 {
     mSwapChain = NULL;
     mBackBuffer = NULL;
@@ -115,9 +115,10 @@ EGLint SwapChain9::reset(int backbufferWidth, int backbufferHeight, EGLint swapI
     presentParameters.EnableAutoDepthStencil = TRUE;
     presentParameters.hDeviceWindow = window;
 
-    // Create the specialized presentation parameters
-    if (mNativeWindow.getConfig()->fullscreen && !windowed)
+    // Specialized presentation parameters
+    if (!windowed)
     {
+        // Fullscreen
         D3DDISPLAYMODE displayMode;
         mRenderer->getD3D9()->GetAdapterDisplayMode(D3DADAPTER_DEFAULT, &displayMode);
 
@@ -128,6 +129,8 @@ EGLint SwapChain9::reset(int backbufferWidth, int backbufferHeight, EGLint swapI
     }
     else
     {
+        // Windowed
+
         presentParameters.Windowed = TRUE;
         presentParameters.BackBufferWidth = backbufferWidth;
         presentParameters.BackBufferHeight = backbufferHeight;
