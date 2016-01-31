@@ -70,199 +70,6 @@ static DWORD convertInterval(EGLint interval)
 #endif
 }
 
-bool SwapChain9::createWindowed(D3DPRESENT_PARAMETERS &presentParameters, int backbufferWidth, int backbufferHeight, int& error)
-{
-    IDirect3DDevice9 *device = mRenderer->getDevice();
-
-    // Don't create a swapchain for NULLREF devices
-    D3DDEVTYPE deviceType = mRenderer->getD3D9DeviceType();
-    EGLNativeWindowType window = mNativeWindow.getNativeWindow();
-    if (window && deviceType != D3DDEVTYPE_NULLREF)
-    {
-        presentParameters.BackBufferCount = 1;
-        presentParameters.Flags = 0;
-        presentParameters.hDeviceWindow = window;
-        presentParameters.MultiSampleQuality = 0;                  // FIXME: Unimplemented
-        presentParameters.MultiSampleType = D3DMULTISAMPLE_NONE;   // FIXME: Unimplemented
-        presentParameters.SwapEffect = D3DSWAPEFFECT_DISCARD;
-        presentParameters.Windowed = TRUE;
-        presentParameters.BackBufferWidth = backbufferWidth;
-        presentParameters.BackBufferHeight = backbufferHeight;
-
-        // http://crbug.com/140239
-        // http://crbug.com/143434
-        //
-        // Some AMD/Intel switchable systems / drivers appear to round swap chain surfaces to a multiple of 64 pixels in width
-        // when using the integrated Intel. This rounds the width up rather than down.
-        //
-        // Some non-switchable AMD GPUs / drivers do not respect the source rectangle to Present. Therefore, when the vendor ID
-        // is not Intel, the back buffer width must be exactly the same width as the window or horizontal scaling will occur.
-        if (mRenderer->getVendorId() == VENDOR_ID_INTEL)
-        {
-            presentParameters.BackBufferWidth = (presentParameters.BackBufferWidth + 63) / 64 * 64;
-        }
-
-        HRESULT result = device->Reset(&presentParameters);
-        if (FAILED(result))
-        {
-            ASSERT(result == D3DERR_OUTOFVIDEOMEMORY || result == E_OUTOFMEMORY || result == D3DERR_INVALIDCALL || result == D3DERR_DEVICELOST);
-
-            ERR("Could not create additional swap chains or offscreen surfaces: %08lX", result);
-            release();
-
-            if (d3d9::isDeviceLostError(result))
-            {
-                error = EGL_CONTEXT_LOST;
-                return false;
-            }
-            else
-            {
-                error = EGL_BAD_ALLOC;
-                return false;
-            }
-        }
-
-        result = device->GetSwapChain(0, &mSwapChain);
-        if (FAILED(result))
-        {
-            ASSERT(result == D3DERR_OUTOFVIDEOMEMORY || result == E_OUTOFMEMORY || result == D3DERR_INVALIDCALL || result == D3DERR_DEVICELOST);
-
-            ERR("Could not get swapchain: %08lX", result);
-            release();
-
-            if (d3d9::isDeviceLostError(result))
-            {
-                error = EGL_CONTEXT_LOST;
-                return false;
-            }
-            else
-            {
-                error = EGL_BAD_ALLOC;
-                return false;
-            }
-        }
-
-        result = device->GetDepthStencilSurface(&mDepthStencil);
-        if (FAILED(result))
-        {
-            ASSERT(result == D3DERR_OUTOFVIDEOMEMORY || result == E_OUTOFMEMORY || result == D3DERR_INVALIDCALL);
-
-            ERR("Could not get depthstencil surface: 0x%08X", result);
-            release();
-
-            if (d3d9::isDeviceLostError(result))
-            {
-                error = EGL_CONTEXT_LOST;
-                return false;
-            }
-            else
-            {
-                error = EGL_BAD_ALLOC;
-                return false;
-            }
-        }
-
-        result = mSwapChain->GetBackBuffer(0, D3DBACKBUFFER_TYPE_MONO, &mBackBuffer);
-        ASSERT(SUCCEEDED(result));
-        InvalidateRect(window, NULL, FALSE);
-    }
-
-    return true;
-}
-
-bool SwapChain9::createFullscreen(D3DPRESENT_PARAMETERS &presentParameters, int& error)
-{
-    IDirect3DDevice9 *device = mRenderer->getDevice();
-
-    D3DDISPLAYMODE displayMode;
-    mRenderer->getD3D9()->GetAdapterDisplayMode(D3DADAPTER_DEFAULT, &displayMode);
-
-    HRESULT result;
-
-    // Don't create a swapchain for NULLREF devices
-    D3DDEVTYPE deviceType = mRenderer->getD3D9DeviceType();
-    EGLNativeWindowType window = mNativeWindow.getNativeWindow();
-    if (window && deviceType != D3DDEVTYPE_NULLREF)
-    {
-        presentParameters.BackBufferCount = 1;
-        presentParameters.Flags = 0;
-        presentParameters.hDeviceWindow = mNativeWindow.getNativeWindow();
-        presentParameters.MultiSampleQuality = 0;                  // FIXME: Unimplemented
-        presentParameters.MultiSampleType = D3DMULTISAMPLE_NONE;   // FIXME: Unimplemented
-        presentParameters.SwapEffect = D3DSWAPEFFECT_DISCARD;
-        presentParameters.Windowed = FALSE;
-        presentParameters.BackBufferWidth = displayMode.Width;
-        presentParameters.BackBufferHeight = displayMode.Height;
-        presentParameters.FullScreen_RefreshRateInHz = displayMode.RefreshRate;
-
-        result = device->Reset(&presentParameters);
-        if (FAILED(result))
-        {
-            ASSERT(result == D3DERR_OUTOFVIDEOMEMORY || result == E_OUTOFMEMORY || result == D3DERR_INVALIDCALL || result == D3DERR_DEVICELOST);
-
-            ERR("Could not create additional swap chains or offscreen surfaces: %08lX", result);
-            release();
-
-            if (d3d9::isDeviceLostError(result))
-            {
-                error = EGL_CONTEXT_LOST;
-                return false;
-            }
-            else
-            {
-                error = EGL_BAD_ALLOC;
-                return false;
-            }
-        }
-
-        result = device->GetSwapChain(0, &mSwapChain);
-        if (FAILED(result))
-        {
-            ASSERT(result == D3DERR_OUTOFVIDEOMEMORY || result == E_OUTOFMEMORY || result == D3DERR_INVALIDCALL || result == D3DERR_DEVICELOST);
-
-            ERR("Could not get swapchain: %08lX", result);
-            release();
-
-            if (d3d9::isDeviceLostError(result))
-            {
-                error = EGL_CONTEXT_LOST;
-                return false;
-            }
-            else
-            {
-                error = EGL_BAD_ALLOC;
-                return false;
-            }
-        }
-
-        result = device->GetDepthStencilSurface(&mDepthStencil);
-        if (FAILED(result))
-        {
-            ASSERT(result == D3DERR_OUTOFVIDEOMEMORY || result == E_OUTOFMEMORY || result == D3DERR_INVALIDCALL);
-
-            ERR("Could not get depthstencil surface: 0x%08X", result);
-            release();
-
-            if (d3d9::isDeviceLostError(result))
-            {
-                error = EGL_CONTEXT_LOST;
-                return false;
-            }
-            else
-            {
-                error = EGL_BAD_ALLOC;
-                return false;
-            }
-        }
-
-        result = mSwapChain->GetBackBuffer(0, D3DBACKBUFFER_TYPE_MONO, &mBackBuffer);
-        ASSERT(SUCCEEDED(result));
-        InvalidateRect(window, NULL, FALSE);
-    }
-
-    return true;
-}
-
 EGLint SwapChain9::resize(int backbufferWidth, int backbufferHeight)
 {
     // D3D9 does not support resizing swap chains without recreating them
@@ -292,26 +99,117 @@ EGLint SwapChain9::reset(int backbufferWidth, int backbufferHeight, EGLint swapI
     const d3d9::TextureFormat &backBuffered3dFormatInfo = d3d9::GetTextureFormatInfo(mOffscreenRenderTargetFormat);
     const d3d9::TextureFormat &depthBuffered3dFormatInfo = d3d9::GetTextureFormatInfo(mDepthBufferFormat);
 
+    D3DDEVTYPE deviceType = mRenderer->getD3D9DeviceType();
+    EGLNativeWindowType window = mNativeWindow.getNativeWindow();
+
+    // Generic present parameters (these should be the same regardless of windowed/fullscreen)
     D3DPRESENT_PARAMETERS presentParameters = { 0 };
+    presentParameters.BackBufferCount = 1;
+    presentParameters.Flags = 0;
+    presentParameters.MultiSampleQuality = 0;                  // FIXME: Unimplemented
+    presentParameters.MultiSampleType = D3DMULTISAMPLE_NONE;   // FIXME: Unimplemented
+    presentParameters.SwapEffect = D3DSWAPEFFECT_DISCARD;
     presentParameters.PresentationInterval = convertInterval(swapInterval);
     presentParameters.BackBufferFormat = backBuffered3dFormatInfo.renderFormat;
     presentParameters.AutoDepthStencilFormat = depthBuffered3dFormatInfo.renderFormat;
     presentParameters.EnableAutoDepthStencil = TRUE;
+    presentParameters.hDeviceWindow = window;
 
-    const egl::Config* config = mNativeWindow.getConfig();
+    // Create the specialized presentation parameters
+    if (mNativeWindow.getConfig()->fullscreen && !windowed)
+    {
+        D3DDISPLAYMODE displayMode;
+        mRenderer->getD3D9()->GetAdapterDisplayMode(D3DADAPTER_DEFAULT, &displayMode);
+
+        presentParameters.Windowed = FALSE;
+        presentParameters.BackBufferWidth = displayMode.Width;
+        presentParameters.BackBufferHeight = displayMode.Height;
+        presentParameters.FullScreen_RefreshRateInHz = displayMode.RefreshRate;
+    }
+    else
+    {
+        presentParameters.Windowed = TRUE;
+        presentParameters.BackBufferWidth = backbufferWidth;
+        presentParameters.BackBufferHeight = backbufferHeight;
+
+        // http://crbug.com/140239
+        // http://crbug.com/143434
+        //
+        // Some AMD/Intel switchable systems / drivers appear to round swap chain surfaces to a multiple of 64 pixels in width
+        // when using the integrated Intel. This rounds the width up rather than down.
+        //
+        // Some non-switchable AMD GPUs / drivers do not respect the source rectangle to Present. Therefore, when the vendor ID
+        // is not Intel, the back buffer width must be exactly the same width as the window or horizontal scaling will occur.
+        if (mRenderer->getVendorId() == VENDOR_ID_INTEL)
+        {
+            presentParameters.BackBufferWidth = (presentParameters.BackBufferWidth + 63) / 64 * 64;
+        }
+    }
 
     //Todo: Is this needed?
     recreate();
-    
-    bool success = false;
-    int error = 0;
-    if (config->fullscreen && !windowed)
-        success = createFullscreen(presentParameters, error);
-    else
-        success = createWindowed(presentParameters, backbufferWidth, backbufferHeight, error);
 
-    if (!success)
-        return error;
+    // Don't create a swapchain for NULLREF devices
+    if (window && deviceType != D3DDEVTYPE_NULLREF)
+    {
+        HRESULT result = device->Reset(&presentParameters);
+        if (FAILED(result))
+        {
+            ASSERT(result == D3DERR_OUTOFVIDEOMEMORY || result == E_OUTOFMEMORY || result == D3DERR_INVALIDCALL || result == D3DERR_DEVICELOST);
+
+            ERR("Could not create additional swap chains or offscreen surfaces: %08lX", result);
+            release();
+
+            if (d3d9::isDeviceLostError(result))
+            {
+                return EGL_CONTEXT_LOST;
+            }
+            else
+            {
+                return EGL_BAD_ALLOC;
+            }
+        }
+
+        result = device->GetSwapChain(0, &mSwapChain);
+        if (FAILED(result))
+        {
+            ASSERT(result == D3DERR_OUTOFVIDEOMEMORY || result == E_OUTOFMEMORY || result == D3DERR_INVALIDCALL || result == D3DERR_DEVICELOST);
+
+            ERR("Could not get swapchain: %08lX", result);
+            release();
+
+            if (d3d9::isDeviceLostError(result))
+            {
+                return EGL_CONTEXT_LOST;
+            }
+            else
+            {
+                return EGL_BAD_ALLOC;
+            }
+        }
+
+        result = device->GetDepthStencilSurface(&mDepthStencil);
+        if (FAILED(result))
+        {
+            ASSERT(result == D3DERR_OUTOFVIDEOMEMORY || result == E_OUTOFMEMORY || result == D3DERR_INVALIDCALL);
+
+            ERR("Could not get depthstencil surface: 0x%08X", result);
+            release();
+
+            if (d3d9::isDeviceLostError(result))
+            {
+                return EGL_CONTEXT_LOST;
+            }
+            else
+            {
+                return EGL_BAD_ALLOC;
+            }
+        }
+
+        result = mSwapChain->GetBackBuffer(0, D3DBACKBUFFER_TYPE_MONO, &mBackBuffer);
+        ASSERT(SUCCEEDED(result));
+        InvalidateRect(window, NULL, FALSE);
+    }
 
     HANDLE *pShareHandle = NULL;
     if (!mNativeWindow.getNativeWindow() && mRenderer->getShareHandleSupport())
@@ -328,13 +226,11 @@ EGLint SwapChain9::reset(int backbufferWidth, int backbufferHeight, EGLint swapI
 
         if (d3d9::isDeviceLostError(result))
         {
-            error = EGL_CONTEXT_LOST;
-            return false;
+            return EGL_CONTEXT_LOST;
         }
         else
         {
-            error = EGL_BAD_ALLOC;
-            return false;
+            return EGL_BAD_ALLOC;
         }
     }
 
