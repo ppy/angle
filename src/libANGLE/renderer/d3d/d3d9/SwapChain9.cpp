@@ -219,8 +219,6 @@ EGLint SwapChain9::reset(int backbufferWidth, int backbufferHeight, EGLint swapI
                                                            backBuffered3dFormatInfo.texFormat, D3DPOOL_DEFAULT, &mOffscreenTexture, pShareHandle);
     if (FAILED(result))
     {
-        ASSERT(false);
-
         ERR("Could not create offscreen texture: %08lX", result);
         release();
 
@@ -355,8 +353,6 @@ EGLint SwapChain9::swapRect(EGLint x, EGLint y, EGLint width, EGLint height)
 
     if (result == D3DERR_OUTOFVIDEOMEMORY || result == E_OUTOFMEMORY || result == D3DERR_DRIVERINTERNALERROR)
     {
-        ASSERT(false);
-
         return EGL_BAD_ALLOC;
     }
 
