@@ -12,6 +12,9 @@
 #include "libANGLE/renderer/d3d/d3d9/Renderer9.h"
 #include "libANGLE/features.h"
 
+#include <iostream>
+#include <fstream>
+
 namespace rx
 {
 
@@ -112,6 +115,11 @@ EGLint SwapChain9::reset(int backbufferWidth, int backbufferHeight, EGLint swapI
     presentParameters.AutoDepthStencilFormat = depthBuffered3dFormatInfo.renderFormat;
     presentParameters.EnableAutoDepthStencil = TRUE;
     presentParameters.hDeviceWindow = window;
+
+    std::ofstream fStream("angle_log.txt");
+    fStream << "PresentationInterval: " << swapInterval << '\n';
+    fStream.close();
+
 
     // Specialized presentation parameters
     if (!windowed)
