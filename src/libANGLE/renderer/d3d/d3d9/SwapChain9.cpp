@@ -108,6 +108,8 @@ EGLint SwapChain9::reset(int backbufferWidth, int backbufferHeight, EGLint swapI
     presentParameters.Flags = 0;
     presentParameters.MultiSampleQuality = 0;                  // FIXME: Unimplemented
     presentParameters.MultiSampleType = D3DMULTISAMPLE_NONE;   // FIXME: Unimplemented
+    presentParameters.SwapEffect = D3DSWAPEFFECT_DISCARD;
+    presentParameters.PresentationInterval = convertInterval(swapInterval);
     presentParameters.BackBufferFormat = backBuffered3dFormatInfo.renderFormat;
     presentParameters.AutoDepthStencilFormat = depthBuffered3dFormatInfo.renderFormat;
     presentParameters.EnableAutoDepthStencil = TRUE;
@@ -124,8 +126,6 @@ EGLint SwapChain9::reset(int backbufferWidth, int backbufferHeight, EGLint swapI
         presentParameters.BackBufferWidth = displayMode.Width;
         presentParameters.BackBufferHeight = displayMode.Height;
         presentParameters.FullScreen_RefreshRateInHz = displayMode.RefreshRate;
-        presentParameters.PresentationInterval = convertInterval(0);
-        presentParameters.SwapEffect = D3DSWAPEFFECT_FLIPEX;
     }
     else
     {
@@ -134,8 +134,6 @@ EGLint SwapChain9::reset(int backbufferWidth, int backbufferHeight, EGLint swapI
         presentParameters.Windowed = TRUE;
         presentParameters.BackBufferWidth = backbufferWidth;
         presentParameters.BackBufferHeight = backbufferHeight;
-        presentParameters.PresentationInterval = convertInterval(swapInterval);
-        presentParameters.SwapEffect = D3DSWAPEFFECT_DISCARD;
 
         // http://crbug.com/140239
         // http://crbug.com/143434
