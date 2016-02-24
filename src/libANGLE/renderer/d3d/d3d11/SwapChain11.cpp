@@ -35,7 +35,8 @@ SwapChain11::SwapChain11(Renderer11 *renderer, NativeWindow nativeWindow, HANDLE
       mRenderer(renderer),
       mPassThroughResourcesInit(false),
       mColorRenderTarget(this, renderer, false),
-      mDepthStencilRenderTarget(this, renderer, true)
+      mDepthStencilRenderTarget(this, renderer, true),
+      windowed(!nativeWindow.getConfig()->fullscreen)
 {
     mHeight = -1;
     mWidth = -1;
@@ -448,9 +449,36 @@ EGLint SwapChain11::reset(int backbufferWidth, int backbufferHeight, EGLint swap
 
     if (mNativeWindow.getNativeWindow())
     {
-        HRESULT result = mNativeWindow.createSwapChain(device, mRenderer->getDxgiFactory(),
+        HRESULT result;
+
+		UINT refreshRate = 0;
+
+        if (!windowed)
+        {
+            IDXGIOutput* output = NULL;
+			result = mRenderer->getAdapter()->EnumOutputs(0, &output);
+
+			DXGI_OUTPUT_DESC outputDesc;
+			output->GetDesc(&outputDesc);
+
+			HMONITOR hMonitor = outputDesc.Monitor;
+			MONITORINFOEX monitorInfo;
+			monitorInfo.cbSize = sizeof(MONITORINFOEX);
+			GetMonitorInfo(hMonitor, &monitorInfo);
+
+			DEVMODE devMode;
+			devMode.dmSize = sizeof(DEVMODE);
+			devMode.dmDriverExtra = 0;
+			EnumDisplaySettings(monitorInfo.szDevice, ENUM_CURRENT_SETTINGS, &devMode);
+
+			backbufferWidth = devMode.dmPelsWidth;
+			backbufferHeight = devMode.dmPelsHeight;
+			refreshRate = devMode.dmDisplayFrequency;
+        }
+
+        result = mNativeWindow.createSwapChain(device, mRenderer->getDxgiFactory(),
                                                getSwapChainNativeFormat(),
-                                               backbufferWidth, backbufferHeight, &mSwapChain);
+                                               backbufferWidth, backbufferHeight, &mSwapChain, refreshRate, !windowed);
 
         if (FAILED(result))
         {
@@ -715,6 +743,11 @@ ID3D11Texture2D *SwapChain11::getDepthStencilTexture()
 void SwapChain11::recreate()
 {
     // possibly should use this method instead of reset
+}
+
+void SwapChain11::toggleWindowed()
+{
+    windowed = !windowed;
 }
 
 }

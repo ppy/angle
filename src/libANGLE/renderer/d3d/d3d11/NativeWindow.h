@@ -59,7 +59,7 @@ class NativeWindow
 
     HRESULT createSwapChain(ID3D11Device* device, DXGIFactory* factory,
                             DXGI_FORMAT format, UINT width, UINT height,
-                            DXGISwapChain** swapChain);
+                            DXGISwapChain** swapChain, UINT refreshRate, bool fullscreen);
 
     inline EGLNativeWindowType getNativeWindow() const { return mWindow; }
 

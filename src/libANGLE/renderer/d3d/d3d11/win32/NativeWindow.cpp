@@ -41,7 +41,7 @@ bool NativeWindow::isValidNativeWindow(EGLNativeWindowType window)
 
 HRESULT NativeWindow::createSwapChain(ID3D11Device* device, DXGIFactory* factory,
                                       DXGI_FORMAT format, unsigned int width, unsigned int height,
-                                      DXGISwapChain** swapChain)
+                                      DXGISwapChain** swapChain, UINT refreshRate, bool fullscreen)
 {
     if (device == NULL || factory == NULL || swapChain == NULL || width == 0 || height == 0)
     {
@@ -60,13 +60,22 @@ HRESULT NativeWindow::createSwapChain(ID3D11Device* device, DXGIFactory* factory
         swapChainDesc.SampleDesc.Count = 1;
         swapChainDesc.SampleDesc.Quality = 0;
         swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT | DXGI_USAGE_BACK_BUFFER;
-        swapChainDesc.BufferCount = 1;
+        swapChainDesc.BufferCount = fullscreen ? 2 : 1;
         swapChainDesc.Scaling = DXGI_SCALING_STRETCH;
         swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_SEQUENTIAL;
         swapChainDesc.AlphaMode = DXGI_ALPHA_MODE_UNSPECIFIED;
-        swapChainDesc.Flags = 0;
+        swapChainDesc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
+
+		DXGI_SWAP_CHAIN_FULLSCREEN_DESC swapChainDescFullscreen;
+		swapChainDescFullscreen.RefreshRate.Numerator = refreshRate;
+		swapChainDescFullscreen.RefreshRate.Denominator = 1;
+		swapChainDescFullscreen.Scaling = DXGI_MODE_SCALING_UNSPECIFIED;
+		swapChainDescFullscreen.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
+		swapChainDescFullscreen.Windowed = !fullscreen;
+
+
         IDXGISwapChain1 *swapChain1 = nullptr;
-        HRESULT result = factory2->CreateSwapChainForHwnd(device, mWindow, &swapChainDesc, nullptr, nullptr, &swapChain1);
+        HRESULT result = factory2->CreateSwapChainForHwnd(device, mWindow, &swapChainDesc, &swapChainDescFullscreen, nullptr, &swapChain1);
         if (SUCCEEDED(result))
         {
             *swapChain = static_cast<DXGISwapChain*>(swapChain1);
@@ -85,11 +94,11 @@ HRESULT NativeWindow::createSwapChain(ID3D11Device* device, DXGIFactory* factory
     swapChainDesc.BufferDesc.RefreshRate.Numerator = 0;
     swapChainDesc.BufferDesc.RefreshRate.Denominator = 1;
     swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT | DXGI_USAGE_BACK_BUFFER;
-    swapChainDesc.Flags = 0;
+	swapChainDesc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
     swapChainDesc.OutputWindow = mWindow;
     swapChainDesc.SampleDesc.Count = 1;
     swapChainDesc.SampleDesc.Quality = 0;
-    swapChainDesc.Windowed = TRUE;
+	swapChainDesc.Windowed = !fullscreen;
     swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
 
     return factory->CreateSwapChain(device, &swapChainDesc, swapChain);

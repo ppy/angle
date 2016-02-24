@@ -36,8 +36,8 @@ class SwapChain9 : public SwapChainD3D
     virtual IDirect3DSurface9 *getDepthStencil();
     virtual IDirect3DTexture9 *getOffscreenTexture();
 
-    EGLint getWidth() const { return mWidth; }
-    EGLint getHeight() const { return mHeight; }
+    virtual EGLint getWidth() const { return mWidth; }
+	virtual EGLint getHeight() const { return mHeight; }
 
     void *getKeyedMutex() override;
 

@@ -284,6 +284,8 @@ class Renderer11 : public RendererD3D
     void onSwap();
     void onBufferDelete(const Buffer11 *deleted);
 
+    IDXGIAdapter* getAdapter() { return mDxgiAdapter; }
+
   protected:
     void createAnnotator() override;
     gl::Error clearTextures(gl::SamplerType samplerType, size_t rangeStart, size_t rangeEnd) override;

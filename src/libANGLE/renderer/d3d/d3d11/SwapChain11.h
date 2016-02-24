@@ -40,10 +40,12 @@ class SwapChain11 : public SwapChainD3D
     virtual ID3D11DepthStencilView *getDepthStencil();
     virtual ID3D11ShaderResourceView *getDepthStencilShaderResource();
 
-    EGLint getWidth() const { return mWidth; }
-    EGLint getHeight() const { return mHeight; }
+	virtual EGLint getWidth() const { return mWidth; }
+	virtual EGLint getHeight() const { return mHeight; }
 
     void *getKeyedMutex() override { return mKeyedMutex; }
+
+    void toggleWindowed() override;
 
   private:
     void release();
@@ -82,6 +84,8 @@ class SwapChain11 : public SwapChainD3D
 
     SurfaceRenderTarget11 mColorRenderTarget;
     SurfaceRenderTarget11 mDepthStencilRenderTarget;
+
+    bool windowed;
 };
 
 }

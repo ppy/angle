@@ -985,8 +985,11 @@ egl::ConfigSet Renderer11::generateConfigs() const
                     config.transparentRedValue = 0;
                     config.transparentGreenValue = 0;
                     config.transparentBlueValue = 0;
+					configs.add(config);
 
-                    configs.add(config);
+					egl::Config fConfig(config);
+					fConfig.fullscreen = EGL_TRUE;
+					configs.add(fConfig);
                 }
             }
         }
