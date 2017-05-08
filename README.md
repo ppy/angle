@@ -1,4 +1,4 @@
-#ANGLE
+# ANGLE
 The goal of ANGLE is to allow users of multiple operating systems to seamlessly run WebGL and other OpenGL ES content by translating OpenGL ES API calls to one of the hardware-supported APIs available for that platform. ANGLE currently provides translation from OpenGL ES 2.0 to desktop OpenGL, Direct3D 9, and Direct3D 11. Support for translation from OpenGL ES 3.0 to all of these APIs is nearing completion, and future plans include enabling validated ES-to-ES support.
 
 |                |  Direct3D 9   |    Direct3D 11      |    Desktop GL      |    GL ES  |
