@@ -121,7 +121,7 @@ EGLint SwapChain9::reset(DisplayD3D *displayD3D,
         d3d9::GetTextureFormatInfo(mDepthBufferFormat);
 
     D3DDEVTYPE deviceType      = mRenderer->getD3D9DeviceType();
-    EGLNativeWindowType window = mNativeWindow.getNativeWindow();
+    EGLNativeWindowType window = mNativeWindow->getNativeWindow();
 
     // Generic present parameters (these should be the same regardless of windowed/fullscreen)
     D3DPRESENT_PARAMETERS presentParameters  = {0};
@@ -180,7 +180,8 @@ EGLint SwapChain9::reset(DisplayD3D *displayD3D,
             ASSERT(result == D3DERR_OUTOFVIDEOMEMORY || result == E_OUTOFMEMORY ||
                    result == D3DERR_INVALIDCALL || result == D3DERR_DEVICELOST);
 
-            ERR("Could not create additional swap chains or offscreen surfaces: %08lX", result);
+            ERR() << "Could not create additional swap chains or offscreen surfaces, "
+                  << gl::FmtHR(result);
             release();
 
             if (d3d9::isDeviceLostError(result))
@@ -199,7 +200,7 @@ EGLint SwapChain9::reset(DisplayD3D *displayD3D,
             ASSERT(result == D3DERR_OUTOFVIDEOMEMORY || result == E_OUTOFMEMORY ||
                    result == D3DERR_INVALIDCALL || result == D3DERR_DEVICELOST);
 
-            ERR("Could not get swapchain: %08lX", result);
+            ERR() << "Could not get swapchain, " << gl::FmtHR(result);
             release();
 
             if (d3d9::isDeviceLostError(result))
@@ -218,7 +219,7 @@ EGLint SwapChain9::reset(DisplayD3D *displayD3D,
             ASSERT(result == D3DERR_OUTOFVIDEOMEMORY || result == E_OUTOFMEMORY ||
                    result == D3DERR_INVALIDCALL);
 
-            ERR("Could not get depthstencil surface: 0x%08X", result);
+            ERR() << "Could not get depthstencil surface, " << gl::FmtHR(result);
             release();
 
             if (d3d9::isDeviceLostError(result))
@@ -237,7 +238,7 @@ EGLint SwapChain9::reset(DisplayD3D *displayD3D,
     }
 
     HANDLE *pShareHandle = NULL;
-    if (!mNativeWindow.getNativeWindow() && mRenderer->getShareHandleSupport())
+    if (!mNativeWindow->getNativeWindow() && mRenderer->getShareHandleSupport())
         pShareHandle = &mShareHandle;
 
     HRESULT result = mRenderer->getDevice()->CreateTexture(
@@ -246,7 +247,7 @@ EGLint SwapChain9::reset(DisplayD3D *displayD3D,
         &mOffscreenTexture, pShareHandle);
     if (FAILED(result))
     {
-        ERR("Could not create offscreen texture: %08lX", result);
+        ERR() << "Could not create offscreen texture, " << gl::FmtHR(result);
         release();
 
         if (d3d9::isDeviceLostError(result))
