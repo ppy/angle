@@ -207,6 +207,7 @@ bool ValidateConfigAttribute(const ValidationContext *val,
         case EGL_MAX_PBUFFER_WIDTH:
         case EGL_MAX_PBUFFER_HEIGHT:
         case EGL_MAX_PBUFFER_PIXELS:
+        case EGL_FULLSCREEN_ANGLE:
             break;
 
         case EGL_OPTIMAL_SURFACE_ORIENTATION_ANGLE:
@@ -362,6 +363,18 @@ bool ValidateConfigAttributeValue(const ValidationContext *val,
                                   "EGL_COLOR_COMPONENT_TYPE_EXT invalid attribute: 0x%X",
                                   static_cast<uint32_t>(value));
                     return false;
+            }
+            break;
+
+        case EGL_FULLSCREEN_ANGLE:
+            switch (value)
+            {
+                case EGL_TRUE:
+                case EGL_FALSE:
+                    break;
+                default:
+                    val->setError(EGL_BAD_ATTRIBUTE, "EGL_FULLSCREEN_ANGLE invalid attribute: 0x%X",
+                                  static_cast<uint32_t>(value));
             }
             break;
 
