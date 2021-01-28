@@ -720,7 +720,7 @@ bool Renderer9::isValidNativeWindow(EGLNativeWindowType window) const
 }
 
 NativeWindowD3D *Renderer9::createNativeWindow(EGLNativeWindowType window,
-                                               const egl::Config *,
+                                               const egl::Config *config,
                                                const egl::AttributeMap &) const
 {
     return new NativeWindow9(window, config);
