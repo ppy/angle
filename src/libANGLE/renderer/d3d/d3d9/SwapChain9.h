@@ -56,6 +56,9 @@ class SwapChain9 : public SwapChainD3D
 
     egl::Error getSyncValues(EGLuint64KHR *ust, EGLuint64KHR *msc, EGLuint64KHR *sbc) override;
 
+    egl::Error toggleWindowed() override;
+    EGLBoolean getWindowed() override { return mWindowed; }
+
   private:
     void release();
 
@@ -63,6 +66,7 @@ class SwapChain9 : public SwapChainD3D
     EGLint mWidth;
     EGLint mHeight;
     EGLint mSwapInterval;
+    EGLBoolean mWindowed;
 
     NativeWindow9 *mNativeWindow;
 

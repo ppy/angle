@@ -358,7 +358,43 @@ egl::Error SurfaceD3D::checkForOutOfDateSwapChain(DisplayD3D *displayD3D)
 
 egl::Error SurfaceD3D::toggleWindowed(DisplayD3D *displayD3D)
 {
-    ANGLE_TRY(mSwapChain->toggleWindowed(displayD3D));
+    ANGLE_TRY(mSwapChain->toggleWindowed());
+
+    if (mSwapChain->getWindowed())
+    {
+        int width;
+        int height;
+
+        if (!mFixedSize)
+        {
+            RECT windowRect;
+            if (!mNativeWindow->getClientRect(&windowRect))
+            {
+                ASSERT(false);
+
+                return egl::EglBadSurface() << "Could not retrieve the window dimensions";
+            }
+
+            width  = windowRect.right - windowRect.left;
+            height = windowRect.bottom - windowRect.top;
+        }
+        else
+        {
+            // non-window surface - size is determined at creation
+            width  = mFixedWidth;
+            height = mFixedHeight;
+        }
+
+        ANGLE_TRY(resetSwapChain(displayD3D, width, height));
+    }
+    else
+    {
+        D3DDISPLAYMODE displayMode;
+        mRenderer->getD3D9()->GetAdapterDisplayMode(D3DADAPTER_DEFAULT, &displayMode);
+
+        ANGLE_TRY(resetSwapChain(displayD3D, displayMode.Width, displayMode.Height));
+    }
+
     return egl::NoError();
 }
 

@@ -71,7 +71,8 @@ class SwapChainD3D : angle::NonCopyable
 
     virtual egl::Error getSyncValues(EGLuint64KHR *ust, EGLuint64KHR *msc, EGLuint64KHR *sbc) = 0;
 
-    virtual egl::Error toggleWindowed(DisplayD3D *displayD3D) = 0;
+    virtual egl::Error toggleWindowed() = 0;
+    virtual EGLBoolean getWindowed()    = EGL_FALSE;
 
   protected:
     const GLenum mOffscreenRenderTargetFormat;

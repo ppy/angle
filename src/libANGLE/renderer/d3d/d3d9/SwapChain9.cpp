@@ -36,7 +36,8 @@ SwapChain9::SwapChain9(Renderer9 *renderer,
       mDepthStencil(nullptr),
       mOffscreenTexture(nullptr),
       mColorRenderTarget(this, false),
-      mDepthStencilRenderTarget(this, true)
+      mDepthStencilRenderTarget(this, true),
+      mWindowed(!nativeWindow->getConfig()->fullscreen)
 {
     ASSERT(orientation == 0);
 }
@@ -196,23 +197,33 @@ EGLint SwapChain9::reset(DisplayD3D *displayD3D,
         presentParameters.MultiSampleType        = D3DMULTISAMPLE_NONE;  // FIXME: Unimplemented
         presentParameters.PresentationInterval   = convertInterval(swapInterval);
         presentParameters.SwapEffect             = D3DSWAPEFFECT_DISCARD;
-        presentParameters.Windowed               = TRUE;
         presentParameters.BackBufferWidth        = backbufferWidth;
         presentParameters.BackBufferHeight       = backbufferHeight;
 
-        // http://crbug.com/140239
-        // http://crbug.com/143434
-        //
-        // Some AMD/Intel switchable systems / drivers appear to round swap chain surfaces to a
-        // multiple of 64 pixels in width when using the integrated Intel. This rounds the width up
-        // rather than down.
-        //
-        // Some non-switchable AMD GPUs / drivers do not respect the source rectangle to Present.
-        // Therefore, when the vendor ID is not Intel, the back buffer width must be exactly the
-        // same width as the window or horizontal scaling will occur.
-        if (IsIntel(mRenderer->getVendorId()))
+        if (mWindowed)
         {
-            presentParameters.BackBufferWidth = (presentParameters.BackBufferWidth + 63) / 64 * 64;
+            presentParameters.Windowed = TRUE;
+
+            // http://crbug.com/140239
+            // http://crbug.com/143434
+            //
+            // Some AMD/Intel switchable systems / drivers appear to round swap chain surfaces to a
+            // multiple of 64 pixels in width when using the integrated Intel. This rounds the width
+            // up rather than down.
+            //
+            // Some non-switchable AMD GPUs / drivers do not respect the source rectangle to
+            // Present. Therefore, when the vendor ID is not Intel, the back buffer width must be
+            // exactly the same width as the window or horizontal scaling will occur.
+            if (IsIntel(mRenderer->getVendorId()))
+            {
+                presentParameters.BackBufferWidth =
+                    (presentParameters.BackBufferWidth + 63) / 64 * 64;
+            }
+        }
+        else
+        {
+            presentParameters.Windowed                   = FALSE;
+            presentParameters.FullScreen_RefreshRateInHz = displayMode.RefreshRate;
         }
 
         result = device->CreateAdditionalSwapChain(&presentParameters, &mSwapChain);
@@ -272,6 +283,12 @@ EGLint SwapChain9::reset(DisplayD3D *displayD3D,
     mSwapInterval = swapInterval;
 
     return EGL_SUCCESS;
+}
+
+egl::Error SwapChain9::toggleWindowed()
+{
+    mWindowed = !mWindowed;
+    return egl::NoError();
 }
 
 // parameters should be validated/clamped by caller
@@ -346,7 +363,7 @@ EGLint SwapChain9::swapRect(DisplayD3D *displayD3D, EGLint x, EGLint y, EGLint w
     RECT rect = {static_cast<LONG>(x), static_cast<LONG>(mHeight - y - height),
                  static_cast<LONG>(x + width), static_cast<LONG>(mHeight - y)};
 
-    HRESULT result = mSwapChain->Present(&rect, &rect, nullptr, nullptr, 0);
+    HRESULT result = mSwapChain->Present(nullptr, nullptr, nullptr, nullptr, 0);
 
     mRenderer->markAllStateDirty();
 
