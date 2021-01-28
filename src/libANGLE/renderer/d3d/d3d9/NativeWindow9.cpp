@@ -11,7 +11,9 @@
 
 namespace rx
 {
-NativeWindow9::NativeWindow9(EGLNativeWindowType window) : NativeWindowD3D(window) {}
+NativeWindow9::NativeWindow9(EGLNativeWindowType window, egl::Config *config)
+    : NativeWindowD3D(window), mConfig(config)
+{}
 
 bool NativeWindow9::initialize()
 {

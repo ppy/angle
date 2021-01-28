@@ -21,13 +21,18 @@ namespace rx
 class NativeWindow9 : public NativeWindowD3D
 {
   public:
-    explicit NativeWindow9(EGLNativeWindowType window);
+    explicit NativeWindow9(EGLNativeWindowType window, egl::Config *config);
 
     bool initialize() override;
     bool getClientRect(LPRECT rect) const override;
     bool isIconic() const override;
 
     static bool IsValidNativeWindow(EGLNativeWindowType window);
+
+    const egl::Config *getConfig() const { return mConfig; }
+
+  private:
+    const egl::Config *mConfig;
 };
 
 }  // namespace rx

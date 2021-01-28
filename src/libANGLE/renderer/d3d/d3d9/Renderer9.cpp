@@ -723,7 +723,7 @@ NativeWindowD3D *Renderer9::createNativeWindow(EGLNativeWindowType window,
                                                const egl::Config *,
                                                const egl::AttributeMap &) const
 {
-    return new NativeWindow9(window);
+    return new NativeWindow9(window, config);
 }
 
 SwapChainD3D *Renderer9::createSwapChain(NativeWindowD3D *nativeWindow,
