@@ -64,13 +64,6 @@ class SwapChain9 : public SwapChainD3D
   private:
     void release();
 
-    D3DDISPLAYMODE getDisplayMode()
-    {
-        D3DDISPLAYMODE displayMode;
-        mRenderer->getD3D9()->GetAdapterDisplayMode(D3DADAPTER_DEFAULT, &displayMode);
-        return displayMode;
-    }
-
     Renderer9 *mRenderer;
     EGLint mWidth;
     EGLint mHeight;
@@ -87,6 +80,13 @@ class SwapChain9 : public SwapChainD3D
 
     SurfaceRenderTarget9 mColorRenderTarget;
     SurfaceRenderTarget9 mDepthStencilRenderTarget;
+
+    D3DDISPLAYMODE getDisplayMode()
+    {
+        D3DDISPLAYMODE displayMode;
+        mRenderer->getD3D9()->GetAdapterDisplayMode(D3DADAPTER_DEFAULT, &displayMode);
+        return displayMode;
+    }
 };
 
 }  // namespace rx
