@@ -103,6 +103,7 @@ typedef void (*__eglMustCastToProperFunctionPointerType)(void);
 #define EGL_VERSION                       0x3054
 #define EGL_WIDTH                         0x3057
 #define EGL_WINDOW_BIT                    0x0004
+#define EGL_FULLSCREEN_ANGLE              0x304f
 typedef EGLBoolean (EGLAPIENTRYP PFNEGLCHOOSECONFIGPROC) (EGLDisplay dpy, const EGLint *attrib_list, EGLConfig *configs, EGLint config_size, EGLint *num_config);
 typedef EGLBoolean (EGLAPIENTRYP PFNEGLCOPYBUFFERSPROC) (EGLDisplay dpy, EGLSurface surface, EGLNativePixmapType target);
 typedef EGLContext (EGLAPIENTRYP PFNEGLCREATECONTEXTPROC) (EGLDisplay dpy, EGLConfig config, EGLContext share_context, const EGLint *attrib_list);
@@ -152,6 +153,7 @@ EGLAPI EGLBoolean EGLAPIENTRY eglSwapBuffers (EGLDisplay dpy, EGLSurface surface
 EGLAPI EGLBoolean EGLAPIENTRY eglTerminate (EGLDisplay dpy);
 EGLAPI EGLBoolean EGLAPIENTRY eglWaitGL (void);
 EGLAPI EGLBoolean EGLAPIENTRY eglWaitNative (EGLint engine);
+EGLAPI EGLBoolean EGLAPIENTRY eglToggleWindowed();
 #endif
 #endif /* EGL_VERSION_1_0 */
 

@@ -63,6 +63,8 @@ class SurfaceD3D : public SurfaceImpl
 
     egl::Error checkForOutOfDateSwapChain(DisplayD3D *displayD3D);
 
+    egl::Error toggleWindowed(DisplayD3D *displayD3D);
+
     angle::Result getAttachmentRenderTarget(const gl::Context *context,
                                             GLenum binding,
                                             const gl::ImageIndex &imageIndex,

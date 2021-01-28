@@ -1873,6 +1873,9 @@
             <param><ptype>EGLint</ptype> <name>engine</name></param>
         </command>
         <command>
+            <proto><ptype>EGLBoolean</ptype> <name>eglToggleWindowed</name></proto>
+        </command>
+        <command>
             <proto><ptype>EGLBoolean</ptype> <name>eglWaitSync</name></proto>
             <param><ptype>EGLDisplay</ptype> <name>dpy</name></param>
             <param><ptype>EGLSync</ptype> <name>sync</name></param>
@@ -2062,6 +2065,7 @@
             <command name="eglTerminate"/>
             <command name="eglWaitGL"/>
             <command name="eglWaitNative"/>
+            <command name="eglToggleWindowed"/>
         </require>
     </feature>
     <feature api="egl" name="EGL_VERSION_1_1" number="1.1">

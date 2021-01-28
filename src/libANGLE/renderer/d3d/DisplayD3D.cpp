@@ -403,6 +403,17 @@ egl::Error DisplayD3D::waitNative(const gl::Context *context, EGLint engine)
     return egl::NoError();
 }
 
+egl::Error DisplayD3D::toggleWindowed(const gl::Context *context)
+{
+    for (egl::Surface *surface : mState.surfaceSet)
+    {
+        SurfaceD3D *surfaceD3D = GetImplAs<SurfaceD3D>(surface);
+        ANGLE_TRY(surfaceD3D->toggleWindowed(this));
+    }
+
+    return egl::NoError();
+}
+
 gl::Version DisplayD3D::getMaxSupportedESVersion() const
 {
     return mRenderer->getMaxSupportedESVersion();

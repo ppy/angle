@@ -356,6 +356,12 @@ egl::Error SurfaceD3D::checkForOutOfDateSwapChain(DisplayD3D *displayD3D)
     return egl::NoError();
 }
 
+egl::Error SurfaceD3D::toggleWindowed(DisplayD3D *displayD3D)
+{
+    ANGLE_TRY(mSwapChain->toggleWindowed(displayD3D));
+    return egl::NoError();
+}
+
 egl::Error SurfaceD3D::swap(const gl::Context *context)
 {
     DisplayD3D *displayD3D = GetImplAs<DisplayD3D>(context->getDisplay());
