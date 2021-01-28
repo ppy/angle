@@ -63,7 +63,8 @@ Config::Config()
       colorComponentType(EGL_COLOR_COMPONENT_TYPE_FIXED_EXT),
       recordable(EGL_FALSE),
       framebufferTarget(EGL_FALSE),  // TODO: http://anglebug.com/4208
-      yInverted(EGL_FALSE)
+      yInverted(EGL_FALSE),
+      fullscreen(0)
 {}
 
 Config::~Config() {}
@@ -371,6 +372,9 @@ std::vector<const Config *> ConfigSet::filter(const AttributeMap &attributeMap) 
                     break;
                 case EGL_Y_INVERTED_NOK:
                     match = config.yInverted == static_cast<EGLBoolean>(attributeValue);
+                    break;
+                case EGL_FULLSCREEN_ANGLE:
+                    match = config.fullscreen == static_cast<EGLBoolean>(attributeValue);
                     break;
                 default:
                     UNREACHABLE();

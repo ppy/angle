@@ -4111,6 +4111,9 @@ void QueryConfigAttrib(const Config *config, EGLint attribute, EGLint *value)
         case EGL_FRAMEBUFFER_TARGET_ANDROID:
             *value = config->framebufferTarget;
             break;
+        case EGL_FULLSCREEN_ANGLE:
+            *value = config->fullscreen;
+            break;
         default:
             UNREACHABLE();
             break;

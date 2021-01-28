@@ -563,8 +563,21 @@ egl::ConfigSet Renderer9::generateConfigs()
                     config.transparentBlueValue  = 0;
                     config.colorComponentType    = gl_egl::GLComponentTypeToEGLColorComponentType(
                         colorBufferFormatInfo.componentType);
+                    config.fullscreen = EGL_FALSE;
 
                     configs.add(config);
+
+                    // If this config supports going fullscreen,
+                    // add a duplicate config with fullscreen set to true.
+                    HRESULT result =
+                        mD3d9->CheckDeviceType(mAdapter, mDeviceType, currentDisplayMode.Format,
+                                               d3d9ColorBufferFormatInfo.renderFormat, false);
+                    if (SUCCEEDED(result))
+                    {
+                        egl::Config fConfig(config);
+                        fConfig.fullscreen = EGL_TRUE;
+                        configs.add(fConfig);
+                    }
                 }
             }
         }
