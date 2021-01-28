@@ -4359,6 +4359,12 @@ bool ValidateWaitNative(const ValidationContext *val, const EGLint engine)
     return true;
 }
 
+bool ValidateToggleWindowed(const ValidationContext *val)
+{
+    ANGLE_VALIDATION_TRY(ValidateDisplay(val, val->eglThread->getDisplay()));
+    return true;
+}
+
 bool ValidateCopyBuffers(const ValidationContext *val,
                          const Display *display,
                          const Surface *surface,

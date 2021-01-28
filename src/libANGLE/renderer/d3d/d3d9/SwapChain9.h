@@ -60,6 +60,7 @@ class SwapChain9 : public SwapChainD3D
     EGLBoolean getWindowed() override { return mWindowed; }
     int getTargetWidth() override { return getDisplayMode().Width; }
     int getTargetHeight() override { return getDisplayMode().Height; }
+    D3DDISPLAYMODE getDisplayMode() const;
 
   private:
     void release();
@@ -80,13 +81,6 @@ class SwapChain9 : public SwapChainD3D
 
     SurfaceRenderTarget9 mColorRenderTarget;
     SurfaceRenderTarget9 mDepthStencilRenderTarget;
-
-    D3DDISPLAYMODE getDisplayMode()
-    {
-        D3DDISPLAYMODE displayMode;
-        mRenderer->getD3D9()->GetAdapterDisplayMode(D3DADAPTER_DEFAULT, &displayMode);
-        return displayMode;
-    }
 };
 
 }  // namespace rx

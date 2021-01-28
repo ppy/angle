@@ -291,6 +291,13 @@ egl::Error SwapChain9::toggleWindowed()
     return egl::NoError();
 }
 
+D3DDISPLAYMODE SwapChain9::getDisplayMode() const
+{
+    D3DDISPLAYMODE displayMode;
+    mRenderer->getD3D9()->GetAdapterDisplayMode(D3DADAPTER_DEFAULT, &displayMode);
+    return displayMode;
+}
+
 // parameters should be validated/clamped by caller
 EGLint SwapChain9::swapRect(DisplayD3D *displayD3D, EGLint x, EGLint y, EGLint width, EGLint height)
 {
