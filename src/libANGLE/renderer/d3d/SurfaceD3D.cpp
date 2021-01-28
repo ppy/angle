@@ -389,10 +389,8 @@ egl::Error SurfaceD3D::toggleWindowed(DisplayD3D *displayD3D)
     }
     else
     {
-        D3DDISPLAYMODE displayMode;
-        mRenderer->getD3D9()->GetAdapterDisplayMode(D3DADAPTER_DEFAULT, &displayMode);
-
-        ANGLE_TRY(resetSwapChain(displayD3D, displayMode.Width, displayMode.Height));
+        ANGLE_TRY(resetSwapChain(displayD3D, mSwapChain->getTargetWidth(),
+                                 mSwapChain->getTargetHeight()));
     }
 
     return egl::NoError();

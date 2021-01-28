@@ -58,9 +58,18 @@ class SwapChain9 : public SwapChainD3D
 
     egl::Error toggleWindowed() override;
     EGLBoolean getWindowed() override { return mWindowed; }
+    int getTargetWidth() override { return getDisplayMode().Width; }
+    int getTargetHeight() override { return getDisplayMode().Height; }
 
   private:
     void release();
+
+    D3DDISPLAYMODE getDisplayMode()
+    {
+        D3DDISPLAYMODE displayMode;
+        mRenderer->getD3D9()->GetAdapterDisplayMode(D3DADAPTER_DEFAULT, &displayMode);
+        return displayMode;
+    }
 
     Renderer9 *mRenderer;
     EGLint mWidth;

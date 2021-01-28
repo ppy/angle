@@ -223,7 +223,7 @@ EGLint SwapChain9::reset(DisplayD3D *displayD3D,
         else
         {
             presentParameters.Windowed                   = FALSE;
-            presentParameters.FullScreen_RefreshRateInHz = displayMode.RefreshRate;
+            presentParameters.FullScreen_RefreshRateInHz = getDisplayMode().RefreshRate;
         }
 
         result = device->CreateAdditionalSwapChain(&presentParameters, &mSwapChain);
