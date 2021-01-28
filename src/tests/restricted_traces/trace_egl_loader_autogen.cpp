@@ -34,6 +34,7 @@ ANGLE_TRACE_LOADER_EXPORT PFNEGLSWAPBUFFERSPROC t_eglSwapBuffers;
 ANGLE_TRACE_LOADER_EXPORT PFNEGLTERMINATEPROC t_eglTerminate;
 ANGLE_TRACE_LOADER_EXPORT PFNEGLWAITGLPROC t_eglWaitGL;
 ANGLE_TRACE_LOADER_EXPORT PFNEGLWAITNATIVEPROC t_eglWaitNative;
+ANGLE_TRACE_LOADER_EXPORT PFNEGLTOGGLEWINDOWEDPROC t_eglToggleWindowed;
 ANGLE_TRACE_LOADER_EXPORT PFNEGLBINDTEXIMAGEPROC t_eglBindTexImage;
 ANGLE_TRACE_LOADER_EXPORT PFNEGLRELEASETEXIMAGEPROC t_eglReleaseTexImage;
 ANGLE_TRACE_LOADER_EXPORT PFNEGLSURFACEATTRIBPROC t_eglSurfaceAttrib;
@@ -154,6 +155,7 @@ void LoadEGL(LoadProc loadProc)
     t_eglTerminate      = reinterpret_cast<PFNEGLTERMINATEPROC>(loadProc("eglTerminate"));
     t_eglWaitGL         = reinterpret_cast<PFNEGLWAITGLPROC>(loadProc("eglWaitGL"));
     t_eglWaitNative     = reinterpret_cast<PFNEGLWAITNATIVEPROC>(loadProc("eglWaitNative"));
+    t_eglToggleWindowed = reinterpret_cast<PFNEGLTOGGLEWINDOWEDPROC>(loadProc("eglToggleWindowed"));
     t_eglBindTexImage   = reinterpret_cast<PFNEGLBINDTEXIMAGEPROC>(loadProc("eglBindTexImage"));
     t_eglReleaseTexImage =
         reinterpret_cast<PFNEGLRELEASETEXIMAGEPROC>(loadProc("eglReleaseTexImage"));

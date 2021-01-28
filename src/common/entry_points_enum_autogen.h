@@ -109,6 +109,7 @@ enum class EntryPoint
     EGLSwapBuffersWithFrameTokenANGLE,
     EGLSwapInterval,
     EGLTerminate,
+    EGLToggleWindowed,
     EGLWaitClient,
     EGLWaitGL,
     EGLWaitNative,

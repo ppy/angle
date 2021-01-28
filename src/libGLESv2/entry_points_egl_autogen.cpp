@@ -449,6 +449,18 @@ EGLBoolean EGLAPIENTRY EGL_WaitNative(EGLint engine)
     return WaitNative(thread, engine);
 }
 
+EGLBoolean EGLAPIENTRY EGL_ToggleWindowed()
+{
+    ANGLE_SCOPED_GLOBAL_LOCK();
+    EGL_EVENT(ToggleWindowed, "");
+
+    Thread *thread = egl::GetCurrentThread();
+
+    ANGLE_EGL_VALIDATE(thread, ToggleWindowed, nullptr, EGLBoolean);
+
+    return ToggleWindowed(thread);
+}
+
 // EGL 1.1
 EGLBoolean EGLAPIENTRY EGL_BindTexImage(EGLDisplay dpy, EGLSurface surface, EGLint buffer)
 {

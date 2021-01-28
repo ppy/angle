@@ -40,6 +40,7 @@
 #define eglTerminate t_eglTerminate
 #define eglWaitGL t_eglWaitGL
 #define eglWaitNative t_eglWaitNative
+#define eglToggleWindowed t_eglToggleWindowed
 #define eglBindTexImage t_eglBindTexImage
 #define eglReleaseTexImage t_eglReleaseTexImage
 #define eglSurfaceAttrib t_eglSurfaceAttrib
@@ -139,6 +140,7 @@ ANGLE_TRACE_LOADER_EXPORT extern PFNEGLSWAPBUFFERSPROC t_eglSwapBuffers;
 ANGLE_TRACE_LOADER_EXPORT extern PFNEGLTERMINATEPROC t_eglTerminate;
 ANGLE_TRACE_LOADER_EXPORT extern PFNEGLWAITGLPROC t_eglWaitGL;
 ANGLE_TRACE_LOADER_EXPORT extern PFNEGLWAITNATIVEPROC t_eglWaitNative;
+ANGLE_TRACE_LOADER_EXPORT extern PFNEGLTOGGLEWINDOWEDPROC t_eglToggleWindowed;
 ANGLE_TRACE_LOADER_EXPORT extern PFNEGLBINDTEXIMAGEPROC t_eglBindTexImage;
 ANGLE_TRACE_LOADER_EXPORT extern PFNEGLRELEASETEXIMAGEPROC t_eglReleaseTexImage;
 ANGLE_TRACE_LOADER_EXPORT extern PFNEGLSURFACEATTRIBPROC t_eglSurfaceAttrib;

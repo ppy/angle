@@ -124,6 +124,7 @@ const ProcEntry g_procTable[] = {
     {"eglSwapBuffersWithFrameTokenANGLE", P(EGL_SwapBuffersWithFrameTokenANGLE)},
     {"eglSwapInterval", P(EGL_SwapInterval)},
     {"eglTerminate", P(EGL_Terminate)},
+    {"eglToggleWindowed", P(EGL_ToggleWindowed)},
     {"eglWaitClient", P(EGL_WaitClient)},
     {"eglWaitGL", P(EGL_WaitGL)},
     {"eglWaitNative", P(EGL_WaitNative)},
@@ -1741,5 +1742,5 @@ const ProcEntry g_procTable[] = {
     {"glWeightPointerOES", P(GL_WeightPointerOES)},
     {"glWeightPointerOESContextANGLE", P(GL_WeightPointerOESContextANGLE)}};
 
-const size_t g_numProcs = 1643;
+const size_t g_numProcs = 1644;
 }  // namespace egl

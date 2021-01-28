@@ -238,6 +238,12 @@ EGLBoolean EGLAPIENTRY eglWaitNative(EGLint engine)
     return EGL_WaitNative(engine);
 }
 
+EGLBoolean EGLAPIENTRY eglToggleWindowed()
+{
+    EnsureEGLLoaded();
+    return EGL_ToggleWindowed();
+}
+
 // EGL 1.1
 EGLBoolean EGLAPIENTRY eglBindTexImage(EGLDisplay dpy, EGLSurface surface, EGLint buffer)
 {

@@ -1772,6 +1772,7 @@ EXPORTS
     EGL_QuerySurface
     EGL_SwapBuffers
     EGL_Terminate
+    EGL_ToggleWindowed
     EGL_WaitGL
     EGL_WaitNative
 

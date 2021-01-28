@@ -160,6 +160,7 @@ EGLBoolean Terminate(Thread *thread, egl::Display *dpyPacked);
 EGLBoolean WaitClient(Thread *thread);
 EGLBoolean WaitGL(Thread *thread);
 EGLBoolean WaitNative(Thread *thread, EGLint engine);
+EGLBoolean ToggleWindowed(Thread *thread);
 EGLBoolean WaitSync(Thread *thread, egl::Display *dpyPacked, Sync *syncPacked, EGLint flags);
 }  // namespace egl
 #endif  // LIBGLESV2_EGL_STUBS_AUTOGEN_H_

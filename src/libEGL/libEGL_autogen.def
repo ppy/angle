@@ -30,6 +30,7 @@ EXPORTS
     eglQuerySurface
     eglSwapBuffers
     eglTerminate
+    eglToggleWindowed
     eglWaitGL
     eglWaitNative
 

@@ -93,6 +93,7 @@ bool ValidateSwapBuffers(const ValidationContext *val,
 bool ValidateTerminate(const ValidationContext *val, const egl::Display *dpyPacked);
 bool ValidateWaitGL(const ValidationContext *val);
 bool ValidateWaitNative(const ValidationContext *val, EGLint engine);
+bool ValidateToggleWindowed(const ValidationContext *val);
 
 // EGL 1.1
 bool ValidateBindTexImage(const ValidationContext *val,

@@ -34,6 +34,7 @@ ANGLE_UTIL_EXPORT PFNEGLSWAPBUFFERSPROC l_eglSwapBuffers;
 ANGLE_UTIL_EXPORT PFNEGLTERMINATEPROC l_eglTerminate;
 ANGLE_UTIL_EXPORT PFNEGLWAITGLPROC l_eglWaitGL;
 ANGLE_UTIL_EXPORT PFNEGLWAITNATIVEPROC l_eglWaitNative;
+ANGLE_UTIL_EXPORT PFNEGLTOGGLEWINDOWEDPROC l_eglToggleWindowed;
 ANGLE_UTIL_EXPORT PFNEGLBINDTEXIMAGEPROC l_eglBindTexImage;
 ANGLE_UTIL_EXPORT PFNEGLRELEASETEXIMAGEPROC l_eglReleaseTexImage;
 ANGLE_UTIL_EXPORT PFNEGLSURFACEATTRIBPROC l_eglSurfaceAttrib;
@@ -149,6 +150,7 @@ void LoadEGL(LoadProc loadProc)
     l_eglTerminate      = reinterpret_cast<PFNEGLTERMINATEPROC>(loadProc("eglTerminate"));
     l_eglWaitGL         = reinterpret_cast<PFNEGLWAITGLPROC>(loadProc("eglWaitGL"));
     l_eglWaitNative     = reinterpret_cast<PFNEGLWAITNATIVEPROC>(loadProc("eglWaitNative"));
+    l_eglToggleWindowed = reinterpret_cast<PFNEGLTOGGLEWINDOWEDPROC>(loadProc("eglToggleWindowed"));
     l_eglBindTexImage   = reinterpret_cast<PFNEGLBINDTEXIMAGEPROC>(loadProc("eglBindTexImage"));
     l_eglReleaseTexImage =
         reinterpret_cast<PFNEGLRELEASETEXIMAGEPROC>(loadProc("eglReleaseTexImage"));
