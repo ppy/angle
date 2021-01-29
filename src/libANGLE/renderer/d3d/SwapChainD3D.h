@@ -71,6 +71,8 @@ class SwapChainD3D : angle::NonCopyable
 
     virtual egl::Error getSyncValues(EGLuint64KHR *ust, EGLuint64KHR *msc, EGLuint64KHR *sbc) = 0;
 
+    virtual EGLint getWidth() const  = 0;
+    virtual EGLint getHeight() const = 0;
     virtual egl::Error toggleWindowed() { return egl::NoError(); }
     virtual EGLBoolean getWindowed() { return EGL_TRUE; }
     virtual int getTargetWidth() { return 0; }
