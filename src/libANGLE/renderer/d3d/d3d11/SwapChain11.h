@@ -54,8 +54,8 @@ class SwapChain11 final : public SwapChainD3D
     const d3d11::DepthStencilView &getDepthStencil();
     const d3d11::SharedSRV &getDepthStencilShaderResource();
 
-    EGLint getWidth() const { return mWidth; }
-    EGLint getHeight() const { return mHeight; }
+    EGLint getWidth() const override { return mWidth; }
+    EGLint getHeight() const override { return mHeight; }
     void *getKeyedMutex() override;
     EGLint getSamples() const { return mEGLSamples; }
 
