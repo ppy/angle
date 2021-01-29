@@ -110,10 +110,7 @@ EGLint SwapChain9::reset(DisplayD3D *displayD3D,
 
     // Release specific resources to free up memory for the new render target, while the
     // old render target still exists for the purpose of preserving its contents.
-    SafeRelease(mSwapChain);
-    SafeRelease(mBackBuffer);
     SafeRelease(mOffscreenTexture);
-    SafeRelease(mDepthStencil);
 
     const d3d9::TextureFormat &backBuffered3dFormatInfo =
         d3d9::GetTextureFormatInfo(mOffscreenRenderTargetFormat);
