@@ -214,25 +214,6 @@ EGLint SwapChain9::reset(DisplayD3D *displayD3D,
             }
         }
 
-        result = device->GetDepthStencilSurface(&mDepthStencil);
-        if (FAILED(result))
-        {
-            ASSERT(result == D3DERR_OUTOFVIDEOMEMORY || result == E_OUTOFMEMORY ||
-                   result == D3DERR_INVALIDCALL);
-
-            ERR() << "Could not get depthstencil surface, " << gl::FmtHR(result);
-            release();
-
-            if (d3d9::isDeviceLostError(result))
-            {
-                return EGL_CONTEXT_LOST;
-            }
-            else
-            {
-                return EGL_BAD_ALLOC;
-            }
-        }
-
         result = mSwapChain->GetBackBuffer(0, D3DBACKBUFFER_TYPE_MONO, &mBackBuffer);
         ASSERT(SUCCEEDED(result));
         InvalidateRect(window, NULL, FALSE);
@@ -287,6 +268,33 @@ EGLint SwapChain9::reset(DisplayD3D *displayD3D,
         ASSERT(SUCCEEDED(result));
 
         SafeRelease(oldRenderTarget);
+    }
+
+    if (mDepthBufferFormat != GL_NONE)
+    {
+        result = device->CreateDepthStencilSurface(
+            presentParameters.BackBufferWidth, presentParameters.BackBufferHeight,
+            depthBuffered3dFormatInfo.renderFormat, D3DMULTISAMPLE_NONE, 0, FALSE, &mDepthStencil,
+            nullptr);
+
+        if (FAILED(result))
+        {
+            ASSERT(result == D3DERR_OUTOFVIDEOMEMORY || result == E_OUTOFMEMORY ||
+                   result == D3DERR_INVALIDCALL);
+
+            ERR() << "Could not create depthstencil surface for new swap chain, "
+                  << gl::FmtHR(result);
+            release();
+
+            if (d3d9::isDeviceLostError(result))
+            {
+                return EGL_CONTEXT_LOST;
+            }
+            else
+            {
+                return EGL_BAD_ALLOC;
+            }
+        }
     }
 
     mWidth        = presentParameters.BackBufferWidth;
