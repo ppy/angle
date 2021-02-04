@@ -131,7 +131,6 @@ EGLint SwapChain9::reset(DisplayD3D *displayD3D,
     presentParameters.MultiSampleType        = D3DMULTISAMPLE_NONE;  // FIXME: Unimplemented
     presentParameters.SwapEffect             = D3DSWAPEFFECT_DISCARD;
     presentParameters.PresentationInterval   = convertInterval(swapInterval);
-    presentParameters.BackBufferFormat       = backBuffered3dFormatInfo.renderFormat;
     presentParameters.AutoDepthStencilFormat = depthBuffered3dFormatInfo.renderFormat;
     presentParameters.EnableAutoDepthStencil = TRUE;
     presentParameters.hDeviceWindow          = window;
@@ -142,6 +141,7 @@ EGLint SwapChain9::reset(DisplayD3D *displayD3D,
         // Fullscreen
         D3DDISPLAYMODE displayMode = getDisplayMode();
 
+        presentParameters.BackBufferFormat           = displayMode.Format;
         presentParameters.Windowed                   = FALSE;
         presentParameters.BackBufferWidth            = displayMode.Width;
         presentParameters.BackBufferHeight           = displayMode.Height;
@@ -151,6 +151,7 @@ EGLint SwapChain9::reset(DisplayD3D *displayD3D,
     {
         // Windowed
 
+        presentParameters.BackBufferFormat = backBuffered3dFormatInfo.renderFormat;
         presentParameters.Windowed         = TRUE;
         presentParameters.BackBufferWidth  = backbufferWidth;
         presentParameters.BackBufferHeight = backbufferHeight;
