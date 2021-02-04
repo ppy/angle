@@ -175,7 +175,8 @@ EGLint SwapChain9::reset(DisplayD3D *displayD3D,
     // Don't create a swapchain for NULLREF devices
     if (window && deviceType != D3DDEVTYPE_NULLREF)
     {
-        HRESULT result = device->Reset(&presentParameters);
+        HRESULT result = device->CreateAdditionalSwapChain(&presentParameters, &mSwapChain);
+
         if (FAILED(result))
         {
             ASSERT(result == D3DERR_OUTOFVIDEOMEMORY || result == E_OUTOFMEMORY ||
@@ -183,25 +184,6 @@ EGLint SwapChain9::reset(DisplayD3D *displayD3D,
 
             ERR() << "Could not create additional swap chains or offscreen surfaces, "
                   << gl::FmtHR(result);
-            release();
-
-            if (d3d9::isDeviceLostError(result))
-            {
-                return EGL_CONTEXT_LOST;
-            }
-            else
-            {
-                return EGL_BAD_ALLOC;
-            }
-        }
-
-        result = device->GetSwapChain(0, &mSwapChain);
-        if (FAILED(result))
-        {
-            ASSERT(result == D3DERR_OUTOFVIDEOMEMORY || result == E_OUTOFMEMORY ||
-                   result == D3DERR_INVALIDCALL || result == D3DERR_DEVICELOST);
-
-            ERR() << "Could not get swapchain, " << gl::FmtHR(result);
             release();
 
             if (d3d9::isDeviceLostError(result))
