@@ -19,7 +19,7 @@
 // D3D9Ex interfaces.  In order to get debug pixel to work on a Vista/Win 7
 // machine, define "ANGLE_D3D9EX=0" in your project file.
 #if !defined(ANGLE_D3D9EX)
-#    define ANGLE_D3D9EX ANGLE_ENABLED
+#    define ANGLE_D3D9EX ANGLE_DISABLED
 #endif
 
 // Vsync
