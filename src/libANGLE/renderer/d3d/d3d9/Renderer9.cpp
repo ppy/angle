@@ -432,7 +432,7 @@ D3DPRESENT_PARAMETERS Renderer9::getDefaultPresentParameters()
     presentParameters.MultiSampleType        = D3DMULTISAMPLE_NONE;
     presentParameters.PresentationInterval   = D3DPRESENT_INTERVAL_DEFAULT;
     presentParameters.SwapEffect             = D3DSWAPEFFECT_DISCARD;
-    presentParameters.Windowed               = TRUE;
+    presentParameters.Windowed               = FALSE;
 
     return presentParameters;
 }

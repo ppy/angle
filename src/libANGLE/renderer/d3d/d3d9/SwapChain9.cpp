@@ -137,7 +137,7 @@ EGLint SwapChain9::reset(DisplayD3D *displayD3D,
     presentParameters.hDeviceWindow          = window;
 
     // Specialized presentation parameters
-    if (!mWindowed)
+    if (false)
     {
         // Fullscreen
         D3DDISPLAYMODE displayMode = getDisplayMode();
