@@ -345,6 +345,11 @@ EGLAPI EGLBoolean EGLAPIENTRY eglSwapBuffersWithFrameTokenANGLE(EGLDisplay dpy, 
 #define EGL_EXTERNAL_CONTEXT_SAVE_STATE_ANGLE 0x3490
 #endif /* EGL_ANGLE_external_context_and_surface */
 
+#ifndef EGL_PLATFORM_ANGLE_external_window_handle
+#define EGL_PLATFORM_ANGLE_external_window_handle 1
+#define EGL_PLATFORM_ANGLE_WINDOW_HANDLE 0x349C
+#endif /* EGL_ANGLE_external_window_handle */
+
 // clang-format on
 
 #endif  // INCLUDE_EGL_EGLEXT_ANGLE_

@@ -280,6 +280,8 @@ class Display final : public LabeledObject,
     // their own DebugAnnotator.
     void setGlobalDebugAnnotator() { gl::InitializeDebugAnnotations(&mAnnotator); }
 
+    EGLNativeWindowType getNativeWindow() const { return mNativeWindow; }
+
   private:
     Display(EGLenum platform, EGLNativeDisplayType displayId, Device *eglDevice);
 
@@ -351,6 +353,9 @@ class Display final : public LabeledObject,
 
     std::mutex mDisplayGlobalMutex;
     std::mutex mProgramCacheMutex;
+
+    void setNativeWindow(const EGLNativeWindowType win) { mNativeWindow = win; }
+    EGLNativeWindowType mNativeWindow;
 };
 
 }  // namespace egl
