@@ -411,6 +411,8 @@ class Renderer9 : public RendererD3D
 
     void setGlobalDebugAnnotator() override;
 
+    HWND getDeviceWindow() const { return mDeviceWindow; }
+
   private:
     angle::Result drawArraysImpl(const gl::Context *context,
                                  gl::PrimitiveMode mode,

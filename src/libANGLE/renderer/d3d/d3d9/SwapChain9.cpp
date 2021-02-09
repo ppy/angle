@@ -134,7 +134,7 @@ EGLint SwapChain9::reset(DisplayD3D *displayD3D,
     presentParameters.BackBufferFormat       = backBuffered3dFormatInfo.renderFormat;
     presentParameters.AutoDepthStencilFormat = depthBuffered3dFormatInfo.renderFormat;
     presentParameters.EnableAutoDepthStencil = TRUE;
-    presentParameters.hDeviceWindow          = window;
+    presentParameters.hDeviceWindow          = mRenderer->getDeviceWindow();
 
     // Specialized presentation parameters
     if (!mWindowed)
@@ -174,15 +174,15 @@ EGLint SwapChain9::reset(DisplayD3D *displayD3D,
     // Don't create a swapchain for NULLREF devices
     if (window && deviceType != D3DDEVTYPE_NULLREF)
     {
-        mRenderer->resetDevice(presentParameters);
+        HRESULT result = device->CreateAdditionalSwapChain(&presentParameters, &mSwapChain);
 
-        HRESULT result = device->GetSwapChain(0, &mSwapChain);
         if (FAILED(result))
         {
             ASSERT(result == D3DERR_OUTOFVIDEOMEMORY || result == E_OUTOFMEMORY ||
                    result == D3DERR_INVALIDCALL || result == D3DERR_DEVICELOST);
 
-            ERR() << "Could not get swapchain, " << gl::FmtHR(result);
+            ERR() << "Could not create additional swap chains or offscreen surfaces, "
+                  << gl::FmtHR(result);
             release();
 
             if (d3d9::isDeviceLostError(result))
