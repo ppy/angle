@@ -174,7 +174,8 @@ EGLint SwapChain9::reset(DisplayD3D *displayD3D,
     // Don't create a swapchain for NULLREF devices
     if (window && deviceType != D3DDEVTYPE_NULLREF)
     {
-        HRESULT result = device->Reset(&presentParameters);
+        HRESULT result = device->CreateAdditionalSwapChain(&presentParameters, &mSwapChain);
+
         if (FAILED(result))
         {
             ASSERT(result == D3DERR_OUTOFVIDEOMEMORY || result == E_OUTOFMEMORY ||
@@ -194,32 +195,24 @@ EGLint SwapChain9::reset(DisplayD3D *displayD3D,
             }
         }
 
-        result = device->GetSwapChain(0, &mSwapChain);
-        if (FAILED(result))
-        {
-            ASSERT(result == D3DERR_OUTOFVIDEOMEMORY || result == E_OUTOFMEMORY ||
-                   result == D3DERR_INVALIDCALL || result == D3DERR_DEVICELOST);
+        result = mSwapChain->GetBackBuffer(0, D3DBACKBUFFER_TYPE_MONO, &mBackBuffer);
+        ASSERT(SUCCEEDED(result));
+        InvalidateRect(window, nullptr, FALSE);
+    }
 
-            ERR() << "Could not get swapchain, " << gl::FmtHR(result);
-            release();
+    if (mDepthBufferFormat != GL_NONE)
+    {
+        result = device->CreateDepthStencilSurface(
+            backbufferWidth, backbufferHeight, depthBufferd3dFormatInfo.renderFormat,
+            D3DMULTISAMPLE_NONE, 0, FALSE, &mDepthStencil, nullptr);
 
-            if (d3d9::isDeviceLostError(result))
-            {
-                return EGL_CONTEXT_LOST;
-            }
-            else
-            {
-                return EGL_BAD_ALLOC;
-            }
-        }
-
-        result = device->GetDepthStencilSurface(&mDepthStencil);
         if (FAILED(result))
         {
             ASSERT(result == D3DERR_OUTOFVIDEOMEMORY || result == E_OUTOFMEMORY ||
                    result == D3DERR_INVALIDCALL);
 
-            ERR() << "Could not get depthstencil surface, " << gl::FmtHR(result);
+            ERR() << "Could not create depthstencil surface for new swap chain, "
+                  << gl::FmtHR(result);
             release();
 
             if (d3d9::isDeviceLostError(result))
@@ -231,10 +224,6 @@ EGLint SwapChain9::reset(DisplayD3D *displayD3D,
                 return EGL_BAD_ALLOC;
             }
         }
-
-        result = mSwapChain->GetBackBuffer(0, D3DBACKBUFFER_TYPE_MONO, &mBackBuffer);
-        ASSERT(SUCCEEDED(result));
-        InvalidateRect(window, NULL, FALSE);
     }
 
     HANDLE *pShareHandle = NULL;
