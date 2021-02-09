@@ -129,6 +129,7 @@ typedef EGLBoolean (EGLAPIENTRYP PFNEGLTERMINATEPROC) (EGLDisplay dpy);
 typedef EGLBoolean (EGLAPIENTRYP PFNEGLWAITGLPROC) (void);
 typedef EGLBoolean (EGLAPIENTRYP PFNEGLWAITNATIVEPROC) (EGLint engine);
 typedef EGLBoolean (EGLAPIENTRYP PFNEGLTOGGLEWINDOWEDPROC) (void);
+typedef EGLBoolean (EGLAPIENTRYP PFNEGLSETWINDOWHANDLEPROC) (EGLNativeWindowType win);
 #if EGL_EGL_PROTOTYPES
 EGLAPI EGLBoolean EGLAPIENTRY eglChooseConfig (EGLDisplay dpy, const EGLint *attrib_list, EGLConfig *configs, EGLint config_size, EGLint *num_config);
 EGLAPI EGLBoolean EGLAPIENTRY eglCopyBuffers (EGLDisplay dpy, EGLSurface surface, EGLNativePixmapType target);

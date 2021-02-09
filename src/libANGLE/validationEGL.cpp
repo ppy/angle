@@ -4378,6 +4378,11 @@ bool ValidateToggleWindowed(const ValidationContext *val)
     return true;
 }
 
+bool ValidateSetWindowHandle(const ValidationContext *val, EGLNativeWindowType win)
+{
+    return true;
+}
+
 bool ValidateCopyBuffers(const ValidationContext *val,
                          const Display *display,
                          const Surface *surface,
