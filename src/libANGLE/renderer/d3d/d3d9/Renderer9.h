@@ -52,6 +52,7 @@ class Renderer9 : public RendererD3D
 
     egl::Error initialize() override;
     bool resetDevice() override;
+    bool resetDevice(D3DPRESENT_PARAMETERS &pp);
 
     egl::ConfigSet generateConfigs() override;
     void generateDisplayExtensions(egl::DisplayExtensions *outExtensions) const override;

@@ -2242,9 +2242,13 @@ bool Renderer9::testDeviceResettable()
 
 bool Renderer9::resetDevice()
 {
-    releaseDeviceResources();
+    D3DPRESENT_PARAMETERS pp = getDefaultPresentParameters();
+    return resetDevice(pp);
+}
 
-    D3DPRESENT_PARAMETERS presentParameters = getDefaultPresentParameters();
+bool Renderer9::resetDevice(D3DPRESENT_PARAMETERS &pp)
+{
+    releaseDeviceResources();
 
     HRESULT result     = D3D_OK;
     bool lost          = testDeviceLost();
@@ -2266,7 +2270,7 @@ bool Renderer9::resetDevice()
         else if (mDeviceEx)
         {
             Sleep(500);  // Give the graphics driver some CPU time
-            result = mDeviceEx->ResetEx(&presentParameters, nullptr);
+            result = mDeviceEx->ResetEx(&pp, nullptr);
             lost   = testDeviceLost();
         }
         else
@@ -2280,7 +2284,7 @@ bool Renderer9::resetDevice()
 
             if (result == D3DERR_DEVICENOTRESET)
             {
-                result = mDevice->Reset(&presentParameters);
+                result = mDevice->Reset(&pp);
             }
             lost = testDeviceLost();
         }
