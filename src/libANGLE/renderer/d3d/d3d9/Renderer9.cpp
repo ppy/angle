@@ -288,7 +288,7 @@ egl::Error Renderer9::initialize()
     }
 
     {
-        mDeviceWindow = mDisplay->getNativeWindow();
+        mDeviceWindow = WindowFromDC(mDisplay->getState().displayId);
     }
 
     D3DPRESENT_PARAMETERS presentParameters = getDefaultPresentParameters();

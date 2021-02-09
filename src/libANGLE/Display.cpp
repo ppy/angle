@@ -588,9 +588,6 @@ Display *Display::GetDisplayFromNativeDisplay(EGLNativeDisplayType nativeDisplay
         EGLAttrib platformType =
             display->mAttributeMap.get(EGL_PLATFORM_ANGLE_NATIVE_PLATFORM_TYPE_ANGLE);
 
-        EGLAttrib windowAttrib = display->mAttributeMap.get(EGL_PLATFORM_ANGLE_WINDOW_HANDLE);
-        display->setNativeWindow(reinterpret_cast<EGLNativeWindowType>((void *)windowAttrib));
-
         rx::DisplayImpl *impl =
             CreateDisplayFromAttribs(displayType, deviceType, platformType, display->getState());
 
