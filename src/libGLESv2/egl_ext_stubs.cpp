@@ -187,7 +187,7 @@ EGLDisplay GetPlatformDisplayEXT(Thread *thread,
     if (platform == EGL_PLATFORM_ANGLE_ANGLE)
     {
         return egl::Display::GetDisplayFromNativeDisplay(
-            gl::bitCast<EGLNativeDisplayType>(native_display), attribMap);
+            gl::bitCast<EGLNativeDisplayType>(native_display), attribMap, thread->mNativeWindow);
     }
     else if (platform == EGL_PLATFORM_DEVICE_EXT)
     {

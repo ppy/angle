@@ -387,7 +387,7 @@ EGLSurface GetCurrentSurface(Thread *thread, EGLint readdraw)
 
 EGLDisplay GetDisplay(Thread *thread, EGLNativeDisplayType display_id)
 {
-    return Display::GetDisplayFromNativeDisplay(display_id, AttributeMap());
+    return Display::GetDisplayFromNativeDisplay(display_id, AttributeMap(), thread->mNativeWindow);
 }
 
 EGLint GetError(Thread *thread)
@@ -405,7 +405,7 @@ EGLDisplay GetPlatformDisplay(Thread *thread,
     if (platform == EGL_PLATFORM_ANGLE_ANGLE)
     {
         return Display::GetDisplayFromNativeDisplay(
-            gl::bitCast<EGLNativeDisplayType>(native_display), attribMap);
+            gl::bitCast<EGLNativeDisplayType>(native_display), attribMap, thread->mNativeWindow);
     }
     else if (platform == EGL_PLATFORM_DEVICE_EXT)
     {

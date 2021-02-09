@@ -188,13 +188,8 @@ void Renderer9::release()
 
     mCompiler.release();
 
-    if (mDeviceWindow)
-    {
-        DestroyWindow(mDeviceWindow);
-        mDeviceWindow = nullptr;
-    }
-
-    mD3d9Module = nullptr;
+    mDeviceWindow = nullptr;
+    mD3d9Module   = nullptr;
 }
 
 egl::Error Renderer9::initialize()
@@ -292,14 +287,8 @@ egl::Error Renderer9::initialize()
         mD3d9->GetAdapterIdentifier(mAdapter, 0, &mAdapterIdentifier);
     }
 
-    static const TCHAR windowName[] = TEXT("AngleHiddenWindow");
-    static const TCHAR className[]  = TEXT("STATIC");
-
     {
-        ANGLE_TRACE_EVENT0("gpu.angle", "CreateWindowEx");
-        mDeviceWindow =
-            CreateWindowEx(WS_EX_NOACTIVATE, className, windowName, WS_DISABLED | WS_POPUP, 0, 0, 1,
-                           1, HWND_MESSAGE, nullptr, GetModuleHandle(nullptr), nullptr);
+        mDeviceWindow = mDisplay->mNativeWindow;
     }
 
     D3DPRESENT_PARAMETERS presentParameters = getDefaultPresentParameters();

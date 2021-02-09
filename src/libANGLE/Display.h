@@ -126,7 +126,8 @@ class Display final : public LabeledObject,
 
     static Display *GetDisplayFromDevice(Device *device, const AttributeMap &attribMap);
     static Display *GetDisplayFromNativeDisplay(EGLNativeDisplayType nativeDisplay,
-                                                const AttributeMap &attribMap);
+                                                const AttributeMap &attribMap,
+                                                EGLNativeWindowType win);
     static Display *GetExistingDisplayFromNativeDisplay(EGLNativeDisplayType nativeDisplay);
 
     static const ClientExtensions &GetClientExtensions();
@@ -279,6 +280,8 @@ class Display final : public LabeledObject,
     // Installs LoggingAnnotator as the global DebugAnnotator, for back-ends that do not implement
     // their own DebugAnnotator.
     void setGlobalDebugAnnotator() { gl::InitializeDebugAnnotations(&mAnnotator); }
+
+    EGLNativeWindowType mNativeWindow;
 
   private:
     Display(EGLenum platform, EGLNativeDisplayType displayId, Device *eglDevice);

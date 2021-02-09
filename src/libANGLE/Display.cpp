@@ -553,7 +553,8 @@ DisplayState::~DisplayState() {}
 //
 // static
 Display *Display::GetDisplayFromNativeDisplay(EGLNativeDisplayType nativeDisplay,
-                                              const AttributeMap &attribMap)
+                                              const AttributeMap &attribMap,
+                                              EGLNativeWindowType win)
 {
     Display *display = nullptr;
 
@@ -580,8 +581,8 @@ Display *Display::GetDisplayFromNativeDisplay(EGLNativeDisplayType nativeDisplay
     if (!display->isInitialized())
     {
         display->setAttributes(attribMap);
-
         display->updateAttribsFromEnvironment(attribMap);
+        display->mNativeWindow = win;
 
         EGLAttrib displayType = display->mAttributeMap.get(EGL_PLATFORM_ANGLE_TYPE_ANGLE);
         EGLAttrib deviceType  = display->mAttributeMap.get(EGL_PLATFORM_ANGLE_DEVICE_TYPE_ANGLE);
