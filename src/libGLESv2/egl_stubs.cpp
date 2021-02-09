@@ -720,6 +720,13 @@ EGLBoolean ToggleWindowed(Thread *thread)
     return EGL_TRUE;
 }
 
+EGLBoolean SetWindowHandle(Thread *thread, EGLNativeWindowType win)
+{
+    thread->mNativeWindow = win;
+    thread->setSuccess();
+    return EGL_TRUE;
+}
+
 EGLBoolean WaitSync(Thread *thread, Display *display, Sync *syncObject, EGLint flags)
 {
     ANGLE_EGL_TRY_RETURN(thread, display->prepareForCall(), "eglWaitSync",

@@ -35,6 +35,7 @@ PFNEGLTERMINATEPROC l_EGL_Terminate;
 PFNEGLWAITGLPROC l_EGL_WaitGL;
 PFNEGLWAITNATIVEPROC l_EGL_WaitNative;
 PFNEGLTOGGLEWINDOWEDPROC l_EGL_ToggleWindowed;
+PFNEGLSETWINDOWHANDLEPROC l_EGL_SetWindowHandle;
 PFNEGLBINDTEXIMAGEPROC l_EGL_BindTexImage;
 PFNEGLRELEASETEXIMAGEPROC l_EGL_ReleaseTexImage;
 PFNEGLSURFACEATTRIBPROC l_EGL_SurfaceAttrib;
@@ -150,6 +151,8 @@ void LoadEGL_EGL(LoadProc loadProc)
     l_EGL_WaitNative   = reinterpret_cast<PFNEGLWAITNATIVEPROC>(loadProc("EGL_WaitNative"));
     l_EGL_ToggleWindowed =
         reinterpret_cast<PFNEGLTOGGLEWINDOWEDPROC>(loadProc("EGL_ToggleWindowed"));
+    l_EGL_SetWindowHandle =
+        reinterpret_cast<PFNEGLSETWINDOWHANDLEPROC>(loadProc("EGL_SetWindowHandle"));
     l_EGL_BindTexImage = reinterpret_cast<PFNEGLBINDTEXIMAGEPROC>(loadProc("EGL_BindTexImage"));
     l_EGL_ReleaseTexImage =
         reinterpret_cast<PFNEGLRELEASETEXIMAGEPROC>(loadProc("EGL_ReleaseTexImage"));

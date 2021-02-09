@@ -58,6 +58,8 @@ class Thread : public LabeledObject
     gl::Context *getContext() const;
     Display *getDisplay() const;
 
+    EGLNativeWindowType mNativeWindow;
+
   private:
     EGLLabelKHR mLabel;
     EGLint mError;

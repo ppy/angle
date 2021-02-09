@@ -1770,6 +1770,7 @@ EXPORTS
     EGL_QueryContext
     EGL_QueryString
     EGL_QuerySurface
+    EGL_SetWindowHandle
     EGL_SwapBuffers
     EGL_Terminate
     EGL_ToggleWindowed

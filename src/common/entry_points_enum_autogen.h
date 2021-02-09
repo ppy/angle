@@ -96,6 +96,7 @@ enum class EntryPoint
     EGLReleaseTexImage,
     EGLReleaseThread,
     EGLSetBlobCacheFuncsANDROID,
+    EGLSetWindowHandle,
     EGLSignalSyncKHR,
     EGLStreamAttribKHR,
     EGLStreamConsumerAcquireKHR,

@@ -244,6 +244,12 @@ EGLBoolean EGLAPIENTRY eglToggleWindowed()
     return EGL_ToggleWindowed();
 }
 
+EGLBoolean EGLAPIENTRY eglSetWindowHandle(EGLNativeWindowType win)
+{
+    EnsureEGLLoaded();
+    return EGL_SetWindowHandle(win);
+}
+
 // EGL 1.1
 EGLBoolean EGLAPIENTRY eglBindTexImage(EGLDisplay dpy, EGLSurface surface, EGLint buffer)
 {

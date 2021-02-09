@@ -461,6 +461,18 @@ EGLBoolean EGLAPIENTRY EGL_ToggleWindowed()
     return ToggleWindowed(thread);
 }
 
+EGLBoolean EGLAPIENTRY EGL_SetWindowHandle(EGLNativeWindowType win)
+{
+    ANGLE_SCOPED_GLOBAL_LOCK();
+    EGL_EVENT(SetWindowHandle, "win = 0x%016" PRIxPTR "", (uintptr_t)win);
+
+    Thread *thread = egl::GetCurrentThread();
+
+    ANGLE_EGL_VALIDATE(thread, SetWindowHandle, nullptr, EGLBoolean, win);
+
+    return SetWindowHandle(thread, win);
+}
+
 // EGL 1.1
 EGLBoolean EGLAPIENTRY EGL_BindTexImage(EGLDisplay dpy, EGLSurface surface, EGLint buffer)
 {

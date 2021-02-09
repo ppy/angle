@@ -41,6 +41,7 @@
 #define eglWaitGL l_eglWaitGL
 #define eglWaitNative l_eglWaitNative
 #define eglToggleWindowed l_eglToggleWindowed
+#define eglSetWindowHandle l_eglSetWindowHandle
 #define eglBindTexImage l_eglBindTexImage
 #define eglReleaseTexImage l_eglReleaseTexImage
 #define eglSurfaceAttrib l_eglSurfaceAttrib
@@ -141,6 +142,7 @@ ANGLE_UTIL_EXPORT extern PFNEGLTERMINATEPROC l_eglTerminate;
 ANGLE_UTIL_EXPORT extern PFNEGLWAITGLPROC l_eglWaitGL;
 ANGLE_UTIL_EXPORT extern PFNEGLWAITNATIVEPROC l_eglWaitNative;
 ANGLE_UTIL_EXPORT extern PFNEGLTOGGLEWINDOWEDPROC l_eglToggleWindowed;
+ANGLE_UTIL_EXPORT extern PFNEGLSETWINDOWHANDLEPROC l_eglSetWindowHandle;
 ANGLE_UTIL_EXPORT extern PFNEGLBINDTEXIMAGEPROC l_eglBindTexImage;
 ANGLE_UTIL_EXPORT extern PFNEGLRELEASETEXIMAGEPROC l_eglReleaseTexImage;
 ANGLE_UTIL_EXPORT extern PFNEGLSURFACEATTRIBPROC l_eglSurfaceAttrib;

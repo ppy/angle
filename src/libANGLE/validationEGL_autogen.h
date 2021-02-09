@@ -94,6 +94,7 @@ bool ValidateTerminate(const ValidationContext *val, const egl::Display *dpyPack
 bool ValidateWaitGL(const ValidationContext *val);
 bool ValidateWaitNative(const ValidationContext *val, EGLint engine);
 bool ValidateToggleWindowed(const ValidationContext *val);
+bool ValidateSetWindowHandle(const ValidationContext *val, EGLNativeWindowType win);
 
 // EGL 1.1
 bool ValidateBindTexImage(const ValidationContext *val,

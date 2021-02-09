@@ -110,6 +110,7 @@ const ProcEntry g_procTable[] = {
     {"eglReleaseTexImage", P(EGL_ReleaseTexImage)},
     {"eglReleaseThread", P(EGL_ReleaseThread)},
     {"eglSetBlobCacheFuncsANDROID", P(EGL_SetBlobCacheFuncsANDROID)},
+    {"eglSetWindowHandle", P(EGL_SetWindowHandle)},
     {"eglSignalSyncKHR", P(EGL_SignalSyncKHR)},
     {"eglStreamAttribKHR", P(EGL_StreamAttribKHR)},
     {"eglStreamConsumerAcquireKHR", P(EGL_StreamConsumerAcquireKHR)},
@@ -1742,5 +1743,5 @@ const ProcEntry g_procTable[] = {
     {"glWeightPointerOES", P(GL_WeightPointerOES)},
     {"glWeightPointerOESContextANGLE", P(GL_WeightPointerOESContextANGLE)}};
 
-const size_t g_numProcs = 1644;
+const size_t g_numProcs = 1645;
 }  // namespace egl

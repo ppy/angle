@@ -28,6 +28,7 @@ EXPORTS
     eglQueryContext
     eglQueryString
     eglQuerySurface
+    eglSetWindowHandle
     eglSwapBuffers
     eglTerminate
     eglToggleWindowed
