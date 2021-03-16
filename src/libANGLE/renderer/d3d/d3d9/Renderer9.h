@@ -411,6 +411,8 @@ class Renderer9 : public RendererD3D
     std::string getVendorString() const override;
     std::string getVersionString() const override;
 
+    IDirect3D9 *getD3D9() const { return mD3d9; }
+
   private:
     angle::Result drawArraysImpl(const gl::Context *context,
                                  gl::PrimitiveMode mode,

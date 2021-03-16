@@ -56,6 +56,8 @@ class SwapChain9 : public SwapChainD3D
 
     egl::Error getSyncValues(EGLuint64KHR *ust, EGLuint64KHR *msc, EGLuint64KHR *sbc) override;
 
+    D3DDISPLAYMODE getDisplayMode() const;
+
   private:
     void release();
 

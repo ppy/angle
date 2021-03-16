@@ -185,35 +185,37 @@ EGLint SwapChain9::reset(DisplayD3D *displayD3D,
     EGLNativeWindowType window = mNativeWindow->getNativeWindow();
     if (window && deviceType != D3DDEVTYPE_NULLREF)
     {
-        D3DPRESENT_PARAMETERS presentParameters  = {};
-        presentParameters.AutoDepthStencilFormat = depthBufferd3dFormatInfo.renderFormat;
-        presentParameters.BackBufferCount        = 1;
-        presentParameters.BackBufferFormat       = backBufferd3dFormatInfo.renderFormat;
-        presentParameters.EnableAutoDepthStencil = FALSE;
-        presentParameters.Flags                  = 0;
-        presentParameters.hDeviceWindow          = window;
-        presentParameters.MultiSampleQuality     = 0;                    // FIXME: Unimplemented
-        presentParameters.MultiSampleType        = D3DMULTISAMPLE_NONE;  // FIXME: Unimplemented
-        presentParameters.PresentationInterval   = convertInterval(swapInterval);
-        presentParameters.SwapEffect             = D3DSWAPEFFECT_DISCARD;
-        presentParameters.Windowed               = TRUE;
-        presentParameters.BackBufferWidth        = backbufferWidth;
-        presentParameters.BackBufferHeight       = backbufferHeight;
+        D3DPRESENT_PARAMETERS presentParameters      = {};
+        presentParameters.AutoDepthStencilFormat     = depthBufferd3dFormatInfo.renderFormat;
+        presentParameters.BackBufferCount            = 1;
+        presentParameters.BackBufferFormat           = backBufferd3dFormatInfo.renderFormat;
+        presentParameters.EnableAutoDepthStencil     = FALSE;
+        presentParameters.Flags                      = 0;
+        presentParameters.hDeviceWindow              = window;
+        presentParameters.MultiSampleQuality         = 0;                    // FIXME: Unimplemented
+        presentParameters.MultiSampleType            = D3DMULTISAMPLE_NONE;  // FIXME: Unimplemented
+        presentParameters.PresentationInterval       = convertInterval(swapInterval);
+        presentParameters.SwapEffect                 = D3DSWAPEFFECT_DISCARD;
+        presentParameters.Windowed                   = TRUE;
+        presentParameters.BackBufferWidth            = backbufferWidth;
+        presentParameters.BackBufferHeight           = backbufferHeight;
+        presentParameters.FullScreen_RefreshRateInHz = getDisplayMode().RefreshRate;
 
         // http://crbug.com/140239
         // http://crbug.com/143434
         //
         // Some AMD/Intel switchable systems / drivers appear to round swap chain surfaces to a
-        // multiple of 64 pixels in width when using the integrated Intel. This rounds the width up
-        // rather than down.
+        // multiple of 64 pixels in width when using the integrated Intel. This rounds the width
+        // up rather than down.
         //
-        // Some non-switchable AMD GPUs / drivers do not respect the source rectangle to Present.
-        // Therefore, when the vendor ID is not Intel, the back buffer width must be exactly the
-        // same width as the window or horizontal scaling will occur.
-        if (IsIntel(mRenderer->getVendorId()))
-        {
-            presentParameters.BackBufferWidth = (presentParameters.BackBufferWidth + 63) / 64 * 64;
-        }
+        // Some non-switchable AMD GPUs / drivers do not respect the source rectangle to
+        // Present. Therefore, when the vendor ID is not Intel, the back buffer width must be
+        // exactly the same width as the window or horizontal scaling will occur. if
+        // (IsIntel(mRenderer->getVendorId()))
+        // {
+        //     presentParameters.BackBufferWidth = (presentParameters.BackBufferWidth + 63) / 64
+        //     * 64;
+        // }
 
         result = device->CreateAdditionalSwapChain(&presentParameters, &mSwapChain);
 
@@ -468,5 +470,12 @@ RenderTargetD3D *SwapChain9::getColorRenderTarget()
 RenderTargetD3D *SwapChain9::getDepthStencilRenderTarget()
 {
     return &mDepthStencilRenderTarget;
+}
+
+D3DDISPLAYMODE SwapChain9::getDisplayMode() const
+{
+    D3DDISPLAYMODE displayMode;
+    mRenderer->getD3D9()->GetAdapterDisplayMode(D3DADAPTER_DEFAULT, &displayMode);
+    return displayMode;
 }
 }  // namespace rx
