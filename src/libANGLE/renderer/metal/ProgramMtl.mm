@@ -317,26 +317,24 @@ angle::Result ProgramMtl::linkImpl(const gl::Context *glContext,
 
     // Gather variable info and transform sources.
     gl::ShaderMap<std::string> shaderSources;
-    gl::ShaderMap<std::string> xfbOnlyShaderSources;
     ShaderInterfaceVariableInfoMap variableInfoMap;
     ShaderInterfaceVariableInfoMap xfbOnlyVariableInfoMap;
-    mtl::GlslangGetShaderSource(mState, resources, &shaderSources,
-                                &xfbOnlyShaderSources[gl::ShaderType::Vertex], &variableInfoMap,
+    mtl::GlslangGetShaderSource(mState, resources, &shaderSources, &variableInfoMap,
                                 &xfbOnlyVariableInfoMap);
 
     // Convert GLSL to spirv code
-    gl::ShaderMap<std::vector<uint32_t>> shaderCodes;
-    gl::ShaderMap<std::vector<uint32_t>> xfbOnlyShaderCodes;  // only vertex shader is needed.
+    gl::ShaderMap<angle::spirv::Blob> shaderCodes;
+    gl::ShaderMap<angle::spirv::Blob> xfbOnlyShaderCodes;  // only vertex shader is needed.
     ANGLE_TRY(mtl::GlslangGetShaderSpirvCode(
         contextMtl, mState.getExecutable().getLinkedShaderStages(), contextMtl->getCaps(),
-        shaderSources, variableInfoMap, &shaderCodes));
+        shaderSources, false, variableInfoMap, &shaderCodes));
 
     if (!mState.getLinkedTransformFeedbackVaryings().empty())
     {
         gl::ShaderBitSet onlyVS;
         onlyVS.set(gl::ShaderType::Vertex);
         ANGLE_TRY(mtl::GlslangGetShaderSpirvCode(contextMtl, onlyVS, contextMtl->getCaps(),
-                                                 xfbOnlyShaderSources, xfbOnlyVariableInfoMap,
+                                                 shaderSources, true, xfbOnlyVariableInfoMap,
                                                  &xfbOnlyShaderCodes));
     }
 

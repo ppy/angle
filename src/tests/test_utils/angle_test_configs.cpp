@@ -49,6 +49,11 @@ bool PlatformParameters::isSwiftshader() const
     return eglParameters.deviceType == EGL_PLATFORM_ANGLE_DEVICE_TYPE_SWIFTSHADER_ANGLE;
 }
 
+EGLint PlatformParameters::getAllocateNonZeroMemoryFeature() const
+{
+    return eglParameters.allocateNonZeroMemoryFeature;
+}
+
 void PlatformParameters::initDefaultParameters()
 {
     // Default debug layers to enabled in tests.
@@ -252,6 +257,15 @@ std::ostream &operator<<(std::ostream &stream, const PlatformParameters &pp)
     if (pp.eglParameters.forceBufferGPUStorageFeatureMtl == EGL_TRUE)
     {
         stream << "_ForceMetalBufferGPUStorage";
+    }
+
+    if (pp.eglParameters.supportsVulkanViewportFlip == EGL_TRUE)
+    {
+        stream << "_VulkanViewportFlip";
+    }
+    else if (pp.eglParameters.supportsVulkanViewportFlip == EGL_FALSE)
+    {
+        stream << "_NoVulkanViewportFlip";
     }
 
     return stream;

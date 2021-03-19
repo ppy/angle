@@ -27,6 +27,8 @@ struct TextureCaps
 {
     TextureCaps();
     TextureCaps(const TextureCaps &other);
+    TextureCaps &operator=(const TextureCaps &other);
+
     ~TextureCaps();
 
     // Supports for basic texturing: glTexImage, glTexSubImage, etc
@@ -510,7 +512,7 @@ struct Extensions
     // GL_EXT_texture_sRGB_decode
     bool textureSRGBDecode = false;
 
-    // GL_EXT_texture_sRGB_override
+    // GL_EXT_texture_format_sRGB_override
     bool textureSRGBOverride = false;
 
     // GL_EXT_sRGB_write_control
@@ -655,6 +657,9 @@ struct Extensions
     // GL_APPLE_clip_distance
     bool clipDistanceAPPLE = false;
 
+    // GL_EXT_clip_control
+    bool clipControlEXT = false;
+
     // GL_OES_texture_cube_map_array
     bool textureCubeMapArrayOES = false;
     // GL_EXT_texture_cube_map_array
@@ -770,6 +775,12 @@ struct Limitations
     // Renderer doesn't support GL_TEXTURE_COMPARE_MODE=GL_NONE on a shadow sampler.
     // TODO(http://anglebug.com/5231): add validation code to front-end.
     bool noShadowSamplerCompareModeNone = false;
+
+    // PVRTC1 textures must be squares.
+    bool squarePvrtc1 = false;
+
+    // ETC1 texture support is emulated.
+    bool emulatedEtc1 = false;
 };
 
 struct TypePrecision
@@ -794,6 +805,8 @@ struct Caps
 {
     Caps();
     Caps(const Caps &other);
+    Caps &operator=(const Caps &other);
+
     ~Caps();
 
     // If the values could be got by using GetIntegeri_v, they should
@@ -1211,6 +1224,9 @@ struct DisplayExtensions
 
     // EGL_ANGLE_external_context_and_surface
     bool externalContextAndSurface = false;
+
+    // EGL_EXT_buffer_age
+    bool bufferAgeEXT = false;
 };
 
 struct DeviceExtensions

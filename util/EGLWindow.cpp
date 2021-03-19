@@ -159,10 +159,21 @@ bool EGLWindow::initializeDisplay(OSWindow *osWindow,
         displayAttributes.push_back(params.debugLayersEnabled);
     }
 
+    const bool hasFeatureVirtualizationANGLE =
+        strstr(extensionString, "EGL_ANGLE_platform_angle_context_virtualization") != nullptr;
+
     if (params.contextVirtualization != EGL_DONT_CARE)
     {
-        displayAttributes.push_back(EGL_PLATFORM_ANGLE_CONTEXT_VIRTUALIZATION_ANGLE);
-        displayAttributes.push_back(params.contextVirtualization);
+        if (hasFeatureVirtualizationANGLE)
+        {
+            displayAttributes.push_back(EGL_PLATFORM_ANGLE_CONTEXT_VIRTUALIZATION_ANGLE);
+            displayAttributes.push_back(params.contextVirtualization);
+        }
+        else
+        {
+            fprintf(stderr,
+                    "EGL_ANGLE_platform_angle_context_virtualization extension not active\n");
+        }
     }
 
     if (params.platformMethods)
@@ -204,6 +215,15 @@ bool EGLWindow::initializeDisplay(OSWindow *osWindow,
     if (params.genMultipleMipsPerPassFeature == EGL_FALSE)
     {
         disabledFeatureOverrides.push_back("gen_multiple_mips_per_pass");
+    }
+
+    if (params.supportsVulkanViewportFlip == EGL_TRUE)
+    {
+        enabledFeatureOverrides.push_back("supportsViewportFlip");
+    }
+    else if (params.supportsVulkanViewportFlip == EGL_FALSE)
+    {
+        disabledFeatureOverrides.push_back("supportsViewportFlip");
     }
 
     switch (params.emulatedPrerotation)

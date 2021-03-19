@@ -107,9 +107,19 @@ bool DisplayNULL::isValidNativeWindow(EGLNativeWindowType window) const
     return true;
 }
 
-std::string DisplayNULL::getVendorString() const
+std::string DisplayNULL::getRendererDescription()
 {
     return "NULL";
+}
+
+std::string DisplayNULL::getVendorString()
+{
+    return "NULL";
+}
+
+std::string DisplayNULL::getVersionString()
+{
+    return std::string();
 }
 
 DeviceImpl *DisplayNULL::createDevice()

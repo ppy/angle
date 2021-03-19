@@ -35,16 +35,12 @@ namespace rx
 // - Set 3 contains all other shader resources, such as uniform and storage blocks, atomic counter
 //   buffers, images and image buffers.
 
-// ANGLE driver uniforms set index (binding is always 0):
-enum DescriptorSetIndex : uint32_t
+enum class DescriptorSetIndex : uint32_t
 {
-    // All internal shaders assume there is only one descriptor set, indexed at 0
-    InternalShader = 0,
-
-    DriverUniforms = 0,  // ANGLE driver uniforms set index
-    UniformsAndXfb,      // Uniforms set index
-    Texture,             // Textures set index
-    ShaderResource,      // Other shader resources set index
+    Internal,        // ANGLE driver uniforms or internal shaders
+    UniformsAndXfb,  // Uniforms set index
+    Texture,         // Textures set index
+    ShaderResource,  // Other shader resources set index
 
     InvalidEnum,
     EnumCount = InvalidEnum,
@@ -167,6 +163,8 @@ class alignas(4) RenderPassDesc final
     void packDepthStencilUnresolveAttachment(bool unresolveDepth, bool unresolveStencil);
     void removeDepthStencilUnresolveAttachment();
 
+    void setWriteControlMode(gl::SrgbWriteControlMode mode);
+
     size_t hash() const;
 
     // Color attachments are in [0, colorAttachmentRange()), with possible gaps.
@@ -174,7 +172,7 @@ class alignas(4) RenderPassDesc final
     size_t depthStencilAttachmentIndex() const { return colorAttachmentRange(); }
 
     bool isColorAttachmentEnabled(size_t colorIndexGL) const;
-    bool hasDepthStencilAttachment() const { return mHasDepthStencilAttachment; }
+    bool hasDepthStencilAttachment() const;
     bool hasColorResolveAttachment(size_t colorIndexGL) const
     {
         return mColorResolveAttachmentMask.test(colorIndexGL);
@@ -211,6 +209,12 @@ class alignas(4) RenderPassDesc final
     {
         return (mAttachmentFormats.back() & kUnresolveStencilFlag) != 0;
     }
+    gl::SrgbWriteControlMode getSRGBWriteControlMode() const
+    {
+        return ((mAttachmentFormats.back() & kSrgbWriteControlFlag) != 0)
+                   ? gl::SrgbWriteControlMode::Linear
+                   : gl::SrgbWriteControlMode::Default;
+    }
 
     // Get the number of attachments in the Vulkan render pass, i.e. after removing disabled
     // color attachments.
@@ -219,6 +223,9 @@ class alignas(4) RenderPassDesc final
     void setSamples(GLint samples);
 
     uint8_t samples() const { return 1u << mLogSamples; }
+
+    void setFramebufferFetchMode(bool hasFramebufferFetch);
+    bool getFramebufferFetchMode() const { return mHasFramebufferFetch; }
 
     angle::FormatID operator[](size_t index) const
     {
@@ -236,7 +243,7 @@ class alignas(4) RenderPassDesc final
     // Store log(samples), to be able to store it in 3 bits.
     uint8_t mLogSamples : 3;
     uint8_t mColorAttachmentRange : 4;
-    uint8_t mHasDepthStencilAttachment : 1;
+    uint8_t mHasFramebufferFetch : 1;
 
     // Whether each color attachment has a corresponding resolve attachment.  Color resolve
     // attachments can be used to optimize resolve through glBlitFramebuffer() as well as support
@@ -290,6 +297,7 @@ class alignas(4) RenderPassDesc final
     static constexpr uint8_t kResolveStencilFlag   = 0x40;
     static constexpr uint8_t kUnresolveDepthFlag   = 0x20;
     static constexpr uint8_t kUnresolveStencilFlag = 0x10;
+    static constexpr uint8_t kSrgbWriteControlFlag = 0x08;
 };
 
 bool operator==(const RenderPassDesc &lhs, const RenderPassDesc &rhs);
@@ -827,7 +835,7 @@ struct PackedPushConstantRange
 };
 
 template <typename T>
-using DescriptorSetLayoutArray = std::array<T, static_cast<size_t>(DescriptorSetIndex::EnumCount)>;
+using DescriptorSetLayoutArray = angle::PackedEnumMap<DescriptorSetIndex, T>;
 using DescriptorSetLayoutPointerArray =
     DescriptorSetLayoutArray<BindingPointer<DescriptorSetLayout>>;
 template <typename T>
@@ -1160,6 +1168,10 @@ class FramebufferDesc
     void updateUnresolveMask(FramebufferNonResolveAttachmentMask unresolveMask);
     void updateDepthStencil(ImageOrBufferViewSubresourceSerial serial);
     void updateDepthStencilResolve(ImageOrBufferViewSubresourceSerial serial);
+    ANGLE_INLINE void setWriteControlMode(gl::SrgbWriteControlMode mode)
+    {
+        mSrgbWriteControlMode = static_cast<uint16_t>(mode);
+    }
     size_t hash() const;
 
     bool operator==(const FramebufferDesc &other) const;
@@ -1173,19 +1185,30 @@ class FramebufferDesc
     }
 
     FramebufferNonResolveAttachmentMask getUnresolveAttachmentMask() const;
+    ANGLE_INLINE gl::SrgbWriteControlMode getWriteControlMode() const
+    {
+        return (mSrgbWriteControlMode == 1) ? gl::SrgbWriteControlMode::Linear
+                                            : gl::SrgbWriteControlMode::Default;
+    }
 
     void updateLayerCount(uint32_t layerCount);
     uint32_t getLayerCount() const { return mLayerCount; }
+    void updateFramebufferFetchMode(bool hasFramebufferFetch);
 
   private:
     void reset();
     void update(uint32_t index, ImageOrBufferViewSubresourceSerial serial);
 
     // Note: this is an exclusive index. If there is one index it will be "1".
-    uint16_t mMaxIndex : 7;
+    // Maximum value is 18
+    uint16_t mMaxIndex : 5;
+    uint16_t mHasFramebufferFetch : 1;
     static_assert(gl::IMPLEMENTATION_MAX_FRAMEBUFFER_LAYERS < (1 << 9) - 1,
                   "Not enough bits for mLayerCount");
+
     uint16_t mLayerCount : 9;
+
+    uint16_t mSrgbWriteControlMode : 1;
 
     // If the render pass contains an initial subpass to unresolve a number of attachments, the
     // subpass description is derived from the following mask, specifying which attachments need
@@ -1194,6 +1217,9 @@ class FramebufferDesc
 
     FramebufferAttachmentArray<ImageOrBufferViewSubresourceSerial> mSerials;
 };
+
+constexpr size_t kFramebufferDescSize = sizeof(FramebufferDesc);
+static_assert(kFramebufferDescSize == 148, "Size check failed");
 
 // Disable warnings about struct padding.
 ANGLE_DISABLE_STRUCT_PADDING_WARNINGS

@@ -272,7 +272,7 @@ std::string PostProcessTranslatedMsl(const std::string &translatedSource)
 class SpirvToMslCompiler : public spirv_cross::CompilerMSL
 {
   public:
-    SpirvToMslCompiler(std::vector<uint32_t> &&spriv) : spirv_cross::CompilerMSL(spriv) {}
+    SpirvToMslCompiler(angle::spirv::Blob &&spriv) : spirv_cross::CompilerMSL(spriv) {}
 
     void compileEx(gl::ShaderType shaderType,
                    const angle::HashMap<std::string, uint32_t> &uboOriginalBindings,
@@ -358,7 +358,7 @@ angle::Result ConvertSpirvToMsl(Context *context,
                                 const angle::HashMap<uint32_t, uint32_t> &xfbOriginalBindings,
                                 const OriginalSamplerBindingMap &originalSamplerBindings,
                                 bool disableRasterization,
-                                std::vector<uint32_t> *sprivCode,
+                                angle::spirv::Blob *sprivCode,
                                 TranslatedShaderInfo *translatedShaderInfoOut)
 {
     if (!sprivCode || sprivCode->empty())
@@ -406,7 +406,6 @@ void TranslatedShaderInfo::reset()
 void GlslangGetShaderSource(const gl::ProgramState &programState,
                             const gl::ProgramLinkedResources &resources,
                             gl::ShaderMap<std::string> *shaderSourcesOut,
-                            std::string *xfbOnlyShaderSourceOut,
                             ShaderInterfaceVariableInfoMap *variableInfoMapOut,
                             ShaderInterfaceVariableInfoMap *xfbOnlyVSVariableInfoMapOut)
 {
@@ -416,32 +415,21 @@ void GlslangGetShaderSource(const gl::ProgramState &programState,
 
     options.supportsTransformFeedbackEmulation = true;
 
-    // This will generate shader source WITHOUT XFB emulated outputs.
+    // Get shader sources and fill variable info map with transform feedback disabled.
     rx::GlslangGetShaderSource(options, programState, resources, &programInterfaceInfo,
                                shaderSourcesOut, variableInfoMapOut);
 
-    // This will generate vertex shader source WITH XFB emulated outputs.
-    if (xfbOnlyShaderSourceOut && !programState.getLinkedTransformFeedbackVaryings().empty())
+    // Fill variable info map with transform feedback enabled.
+    if (!programState.getLinkedTransformFeedbackVaryings().empty())
     {
-        gl::Shader *glShader    = programState.getAttachedShader(gl::ShaderType::Vertex);
-        *xfbOnlyShaderSourceOut = glShader ? glShader->getTranslatedSource() : "";
-
         GlslangProgramInterfaceInfo xfbOnlyInterfaceInfo;
         ResetGlslangProgramInterfaceInfo(&xfbOnlyInterfaceInfo);
 
         options.enableTransformFeedbackEmulation = true;
 
-        rx::GlslangGenTransformFeedbackEmulationOutputs(
-            options, programState, &xfbOnlyInterfaceInfo, xfbOnlyShaderSourceOut,
-            xfbOnlyVSVariableInfoMapOut);
-
-        const bool isTransformFeedbackStage =
-            !programState.getLinkedTransformFeedbackVaryings().empty();
-
         GlslangAssignLocations(options, programState, resources.varyingPacking,
-                               gl::ShaderType::Vertex, gl::ShaderType::InvalidEnum,
-                               isTransformFeedbackStage, &xfbOnlyInterfaceInfo,
-                               xfbOnlyVSVariableInfoMapOut);
+                               gl::ShaderType::Vertex, gl::ShaderType::InvalidEnum, true,
+                               &xfbOnlyInterfaceInfo, xfbOnlyVSVariableInfoMapOut);
     }
 }
 
@@ -449,10 +437,11 @@ angle::Result GlslangGetShaderSpirvCode(ErrorHandler *context,
                                         const gl::ShaderBitSet &linkedShaderStages,
                                         const gl::Caps &glCaps,
                                         const gl::ShaderMap<std::string> &shaderSources,
+                                        bool isTransformFeedbackEnabled,
                                         const ShaderInterfaceVariableInfoMap &variableInfoMap,
-                                        gl::ShaderMap<std::vector<uint32_t>> *shaderCodeOut)
+                                        gl::ShaderMap<angle::spirv::Blob> *shaderCodeOut)
 {
-    gl::ShaderMap<SpirvBlob> initialSpirvBlobs;
+    gl::ShaderMap<angle::spirv::Blob> initialSpirvBlobs;
 
     ANGLE_TRY(rx::GlslangGetShaderSpirvCode(
         [context](GlslangError error) { return HandleError(context, error); }, linkedShaderStages,
@@ -463,7 +452,9 @@ angle::Result GlslangGetShaderSpirvCode(ErrorHandler *context,
         GlslangSpirvOptions options;
         options.shaderType                         = shaderType;
         options.transformPositionToVulkanClipSpace = true;
-        options.isTransformFeedbackStage           = shaderType == gl::ShaderType::Vertex;
+        options.isTransformFeedbackStage =
+            shaderType == gl::ShaderType::Vertex && isTransformFeedbackEnabled;
+        options.isTransformFeedbackEmulated = true;
 
         angle::Result status = GlslangTransformSpirvCode(
             [context](GlslangError error) { return HandleError(context, error); }, options,
@@ -480,8 +471,8 @@ angle::Result GlslangGetShaderSpirvCode(ErrorHandler *context,
 angle::Result SpirvCodeToMsl(Context *context,
                              const gl::ProgramState &programState,
                              const ShaderInterfaceVariableInfoMap &xfbVSVariableInfoMap,
-                             gl::ShaderMap<std::vector<uint32_t>> *spirvShaderCode,
-                             std::vector<uint32_t> *xfbOnlySpirvCode /** nullable */,
+                             gl::ShaderMap<angle::spirv::Blob> *spirvShaderCode,
+                             angle::spirv::Blob *xfbOnlySpirvCode /** nullable */,
                              gl::ShaderMap<TranslatedShaderInfo> *mslShaderInfoOut,
                              TranslatedShaderInfo *mslXfbOnlyShaderInfoOut /** nullable */)
 {
@@ -527,7 +518,7 @@ angle::Result SpirvCodeToMsl(Context *context,
     // Do the actual translation
     for (gl::ShaderType shaderType : gl::kAllGLES2ShaderTypes)
     {
-        std::vector<uint32_t> &sprivCode = spirvShaderCode->at(shaderType);
+        angle::spirv::Blob &sprivCode = spirvShaderCode->at(shaderType);
         ANGLE_TRY(ConvertSpirvToMsl(context, shaderType, uboOriginalBindings, xfbOriginalBindings,
                                     originalSamplerBindings, /* disableRasterization */ false,
                                     &sprivCode, &mslShaderInfoOut->at(shaderType)));

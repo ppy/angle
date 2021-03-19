@@ -130,16 +130,17 @@ VertexArrayVk::VertexArrayVk(ContextVk *contextVk, const gl::VertexArrayState &s
     mCurrentArrayBuffers.fill(&emptyBuffer);
 
     mDynamicVertexData.init(renderer, vk::kVertexBufferUsageFlags, vk::kVertexBufferAlignment,
-                            kDynamicVertexDataSize, true);
+                            kDynamicVertexDataSize, true, vk::DynamicBufferPolicy::OneShotUse);
 
     // We use an alignment of four for index data. This ensures that compute shaders can read index
     // elements from "uint" aligned addresses.
     mDynamicIndexData.init(renderer, vk::kIndexBufferUsageFlags, vk::kIndexBufferAlignment,
-                           kDynamicIndexDataSize, true);
+                           kDynamicIndexDataSize, true, vk::DynamicBufferPolicy::OneShotUse);
     mTranslatedByteIndexData.init(renderer, vk::kIndexBufferUsageFlags, vk::kIndexBufferAlignment,
-                                  kDynamicIndexDataSize, true);
+                                  kDynamicIndexDataSize, true, vk::DynamicBufferPolicy::OneShotUse);
     mTranslatedByteIndirectData.init(renderer, vk::kIndirectBufferUsageFlags,
-                                     vk::kIndirectBufferAlignment, kDynamicIndirectDataSize, true);
+                                     vk::kIndirectBufferAlignment, kDynamicIndirectDataSize, true,
+                                     vk::DynamicBufferPolicy::OneShotUse);
 }
 
 VertexArrayVk::~VertexArrayVk() {}
@@ -445,10 +446,13 @@ angle::Result VertexArrayVk::syncState(const gl::Context *context,
         switch (dirtyBit)
         {
             case gl::VertexArray::DIRTY_BIT_ELEMENT_ARRAY_BUFFER:
+            case gl::VertexArray::DIRTY_BIT_ELEMENT_ARRAY_BUFFER_DATA:
             {
                 gl::Buffer *bufferGL = mState.getElementArrayBuffer();
-                if (bufferGL)
+                if (bufferGL && bufferGL->getSize() > 0)
                 {
+                    // Note that just updating buffer data may still result in a new
+                    // vk::BufferHelper allocation.
                     BufferVk *bufferVk         = vk::GetImpl(bufferGL);
                     mCurrentElementArrayBuffer = &bufferVk->getBuffer();
                 }
@@ -463,13 +467,6 @@ angle::Result VertexArrayVk::syncState(const gl::Context *context,
                 mDirtyLineLoopTranslation = true;
                 break;
             }
-
-            case gl::VertexArray::DIRTY_BIT_ELEMENT_ARRAY_BUFFER_DATA:
-                mLineLoopBufferFirstIndex.reset();
-                mLineLoopBufferLastIndex.reset();
-                ANGLE_TRY(contextVk->onIndexBufferChange(mCurrentElementArrayBuffer));
-                mDirtyLineLoopTranslation = true;
-                break;
 
 #define ANGLE_VERTEX_DIRTY_ATTRIB_FUNC(INDEX)                                                 \
     case gl::VertexArray::DIRTY_BIT_ATTRIB_0 + INDEX:                                         \

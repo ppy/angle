@@ -81,6 +81,9 @@ class RenderTargetVk final : public FramebufferAttachmentRenderTarget
 
     // For cube maps we use single-level single-layer 2D array views.
     angle::Result getImageView(ContextVk *contextVk, const vk::ImageView **imageViewOut) const;
+    angle::Result getImageViewWithColorspace(ContextVk *contextVk,
+                                             gl::SrgbWriteControlMode srgbWriteContrlMode,
+                                             const vk::ImageView **imageViewOut) const;
     angle::Result getResolveImageView(ContextVk *contextVk,
                                       const vk::ImageView **imageViewOut) const;
 
@@ -91,6 +94,7 @@ class RenderTargetVk final : public FramebufferAttachmentRenderTarget
 
     const vk::Format &getImageFormat() const;
     gl::Extents getExtents() const;
+    gl::Extents getRotatedExtents() const;
     gl::LevelIndex getLevelIndex() const { return mLevelIndexGL; }
     uint32_t getLayerIndex() const { return mLayerIndex; }
     uint32_t getLayerCount() const { return mLayerCount; }
@@ -131,6 +135,7 @@ class RenderTargetVk final : public FramebufferAttachmentRenderTarget
   private:
     angle::Result getImageViewImpl(ContextVk *contextVk,
                                    const vk::ImageHelper &image,
+                                   gl::SrgbWriteControlMode mode,
                                    vk::ImageViewHelper *imageViews,
                                    const vk::ImageView **imageViewOut) const;
 

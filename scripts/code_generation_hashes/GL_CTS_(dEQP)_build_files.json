@@ -1,6 +1,6 @@
 {
   "scripts/gen_vk_gl_cts_build.py":
-    "51d73f5dda6cd0afac2b241bf95805dd",
+    "f634925ccbb1bd66a42b051b5e19a832",
   "src/tests/deqp_support/BUILD.gn":
     "860cc9b728dc35454b0d527651cc47de",
   "src/tests/deqp_support/deqp_data_autogen.gni":
@@ -22,7 +22,7 @@
   "third_party/VK-GL-CTS/src/external/openglcts/modules/CMakeLists.txt":
     "9852754780cd9522f93644d2d99b271d",
   "third_party/VK-GL-CTS/src/external/openglcts/modules/common/CMakeLists.txt":
-    "ece5f0d78cfc4fe6b82df51f038a0add",
+    "c24e72de4aedd9855ea5ab30c3ac4e4c",
   "third_party/VK-GL-CTS/src/external/openglcts/modules/common/subgroups/CMakeLists.txt":
     "bf71ce2d9756ccee7833a789737e6481",
   "third_party/VK-GL-CTS/src/external/openglcts/modules/gl/CMakeLists.txt":
@@ -44,7 +44,7 @@
   "third_party/VK-GL-CTS/src/external/vulkancts/framework/vulkan/CMakeLists.txt":
     "7f90f08bea39abbd86db1503b716a536",
   "third_party/VK-GL-CTS/src/external/vulkancts/modules/vulkan/CMakeLists.txt":
-    "b6caf8c115087a940131e083047acd44",
+    "f60ca1240cd3d200dcfc9583ef56ba11",
   "third_party/VK-GL-CTS/src/external/vulkancts/modules/vulkan/amber/CMakeLists.txt":
     "e5a1fa5b0692ef46bd627cd1b35a9da6",
   "third_party/VK-GL-CTS/src/external/vulkancts/modules/vulkan/api/CMakeLists.txt":
@@ -54,7 +54,7 @@
   "third_party/VK-GL-CTS/src/external/vulkancts/modules/vulkan/clipping/CMakeLists.txt":
     "6af40d2325a8cd6b15a22f68888a36d4",
   "third_party/VK-GL-CTS/src/external/vulkancts/modules/vulkan/compute/CMakeLists.txt":
-    "b074786861622a59939c3620ac1db968",
+    "192664ea3841e9cb97198de4741d43c2",
   "third_party/VK-GL-CTS/src/external/vulkancts/modules/vulkan/conditional_rendering/CMakeLists.txt":
     "6acfaa2670c4cb02fa1d22d254ad59c4",
   "third_party/VK-GL-CTS/src/external/vulkancts/modules/vulkan/descriptor_indexing/CMakeLists.txt":
@@ -64,15 +64,17 @@
   "third_party/VK-GL-CTS/src/external/vulkancts/modules/vulkan/draw/CMakeLists.txt":
     "c36ab3330786030a86c8a9e3da3b3518",
   "third_party/VK-GL-CTS/src/external/vulkancts/modules/vulkan/dynamic_state/CMakeLists.txt":
-    "ba2bba86426f1dc9eb16bccc2df60111",
+    "faffe50bfa61ca2bd39ca8d6230a7229",
   "third_party/VK-GL-CTS/src/external/vulkancts/modules/vulkan/fragment_ops/CMakeLists.txt":
     "4e51584a591b57ea7ba21732e7658e21",
   "third_party/VK-GL-CTS/src/external/vulkancts/modules/vulkan/fragment_shader_interlock/CMakeLists.txt":
     "466928c89408546d4b34b5600d45bfa6",
+  "third_party/VK-GL-CTS/src/external/vulkancts/modules/vulkan/fragment_shading_rate/CMakeLists.txt":
+    "af7af957b302490789e00cf231195fae",
   "third_party/VK-GL-CTS/src/external/vulkancts/modules/vulkan/geometry/CMakeLists.txt":
     "ea6d6d378737311f541c79d03396dc79",
   "third_party/VK-GL-CTS/src/external/vulkancts/modules/vulkan/image/CMakeLists.txt":
-    "6a0f199a8c3887d01f75ffbe71760c48",
+    "a6e7145ae844c8f2202001b0c489bed4",
   "third_party/VK-GL-CTS/src/external/vulkancts/modules/vulkan/imageless_framebuffer/CMakeLists.txt":
     "9f2167a87844c1c5197d9ccb8863a613",
   "third_party/VK-GL-CTS/src/external/vulkancts/modules/vulkan/memory/CMakeLists.txt":
@@ -84,7 +86,7 @@
   "third_party/VK-GL-CTS/src/external/vulkancts/modules/vulkan/multiview/CMakeLists.txt":
     "16a341e4f08e85adad6dbf0309883f5b",
   "third_party/VK-GL-CTS/src/external/vulkancts/modules/vulkan/pipeline/CMakeLists.txt":
-    "e0fca38f3aa8ab3e94fb0c8ff079aa4c",
+    "c9a996b934f1eafe092102761dce38d2",
   "third_party/VK-GL-CTS/src/external/vulkancts/modules/vulkan/postmortem/CMakeLists.txt":
     "7b1092fbc97773d8c7d2d3b56971f877",
   "third_party/VK-GL-CTS/src/external/vulkancts/modules/vulkan/protected_memory/CMakeLists.txt":
@@ -94,9 +96,9 @@
   "third_party/VK-GL-CTS/src/external/vulkancts/modules/vulkan/rasterization/CMakeLists.txt":
     "13850a7e8d1f12fc9d1ba5b3314c54eb",
   "third_party/VK-GL-CTS/src/external/vulkancts/modules/vulkan/ray_query/CMakeLists.txt":
-    "8ee23a99e5f09e73c443654ba55223d4",
+    "93b1670e6e54c125ed659fd46da18ed9",
   "third_party/VK-GL-CTS/src/external/vulkancts/modules/vulkan/ray_tracing/CMakeLists.txt":
-    "b787ebb002194064462eb3ab67a46adc",
+    "41033012125348ad28fc3a1b0f2e81e3",
   "third_party/VK-GL-CTS/src/external/vulkancts/modules/vulkan/renderpass/CMakeLists.txt":
     "154254ec9d21124a3ef46ad9e5cb1829",
   "third_party/VK-GL-CTS/src/external/vulkancts/modules/vulkan/robustness/CMakeLists.txt":
@@ -114,7 +116,7 @@
   "third_party/VK-GL-CTS/src/external/vulkancts/modules/vulkan/subgroups/CMakeLists.txt":
     "d5502ba8e189212eef2e6ec1426f17a6",
   "third_party/VK-GL-CTS/src/external/vulkancts/modules/vulkan/synchronization/CMakeLists.txt":
-    "68fab755b6bdd9570fa311b6c8d809fb",
+    "cb613a2d3318840074eb98aec075290d",
   "third_party/VK-GL-CTS/src/external/vulkancts/modules/vulkan/tessellation/CMakeLists.txt":
     "bd315c04bf5adb9f63e8c991fbde1e34",
   "third_party/VK-GL-CTS/src/external/vulkancts/modules/vulkan/texture/CMakeLists.txt":
@@ -194,7 +196,7 @@
   "third_party/VK-GL-CTS/src/modules/gles3/stress/CMakeLists.txt":
     "618e03b394cfc824a5114e7c0ac9843e",
   "third_party/VK-GL-CTS/src/modules/gles31/CMakeLists.txt":
-    "15a891f0bc8a84415ac932deec54e77c",
+    "62bb5f44bd3f34e1c66d3ba5dd2bab7d",
   "third_party/VK-GL-CTS/src/modules/gles31/functional/CMakeLists.txt":
     "1743616165582d2b40922917fb24cb14",
   "third_party/VK-GL-CTS/src/modules/gles31/stress/CMakeLists.txt":

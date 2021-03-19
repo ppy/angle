@@ -37,8 +37,6 @@ class DisplayEGL : public DisplayGL
 
     EGLSyncImpl *createSync(const egl::AttributeMap &attribs) override;
 
-    std::string getVendorString() const override;
-
     void setBlobCacheFuncs(EGLSetBlobFuncANDROID set, EGLGetBlobFuncANDROID get) override;
 
     virtual void destroyNativeContext(EGLContext context);
@@ -90,6 +88,8 @@ class DisplayEGL : public DisplayGL
 
     void populateFeatureList(angle::FeatureList *features) override;
 
+    RendererGL *getRenderer() const override;
+
     egl::Error validateImageClientBuffer(const gl::Context *context,
                                          EGLenum target,
                                          EGLClientBuffer clientBuffer,
@@ -111,6 +111,8 @@ class DisplayEGL : public DisplayGL
     egl::Error createRenderer(EGLContext shareContext, std::shared_ptr<RendererEGL> *outRenderer);
 
     egl::Error makeCurrentSurfaceless(gl::Context *context) override;
+
+    virtual EGLint fixSurfaceType(EGLint surfaceType) const;
 
     template <typename T>
     void getConfigAttrib(EGLConfig config, EGLint attribute, T *value) const;

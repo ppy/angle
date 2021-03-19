@@ -26,7 +26,6 @@ DifferentStencilMasksTest.*
 EGLContextASANTest.*
 EGLContextSharingTest.TextureLifetime/*
 FramebufferTest.MultiContextNoRenderingFeedbackLoops/*
-GetTexLevelParameterTest.ExtensionStringExposed/*
 GLSLTest.InactiveVaryingInVertexActiveInFragment/*
 InstancingTest.LineLoop/*
 MaxTextureSizeTest.*
@@ -40,6 +39,7 @@ RequestExtensionTest.Queries/*
 RobustBufferAccessBehaviorTest.DynamicBuffer/*
 SimpleStateChangeTest.DrawAndClearTextureRepeatedly/*
 SimpleStateChangeTest.RebindTranslatedAttribute/*
+StateChangeTest.DrawAfterFlushWithNoStateChange/*
 Texture2DDepthTest.DepthTextureES2Compatibility/*
 TextureCubeTest.*
 VulkanClearTest.*
@@ -62,7 +62,6 @@ CopyCompressedTextureTest.InternalFormat/*
 DebugMarkerTest.*
 DebugTest.*
 DepthStencilTest.*
-DiscardFramebufferEXTTest.*
 DrawBuffersTest.*
 EGLPrintEGLinfoTest.PrintGLESCapabilities/*
 EGLStreamTest.*
@@ -81,7 +80,8 @@ IndexedPointsTestUShort.*
 OcclusionQueriesTest.*
 PBOExtensionTest.*
 PixmapTest.Clearing/*
-SemaphoreTest.SemaphoreShouldBeSemaphore/*
+RobustClientMemoryTest.*
+SemaphoreTest.*
 SRGBFramebufferTest.Validation/*
 StateChangeRenderTest.GenerateMipmap/*
 SyncQueriesTest.*
@@ -94,6 +94,13 @@ VertexAttributeCachingTest.*
 VertexAttributeOORTest.*
 VertexAttributeTest.*
 ViewportTest.*
+VulkanExternalImageTest.ShouldClearMutableNoStorageUsageOpaqueFdRGBA8/*
+VulkanExternalImageTest.ShouldClearOpaqueFdWithSemaphores/*
+VulkanExternalImageTest.ShouldClearZirconVmoRGBA8/*
+VulkanExternalImageTest.ShouldClearZirconWithFlagsVmoRGBA8/*
+VulkanExternalImageTest.ShouldImportSemaphoreOpaqueFd/*
+VulkanExternalImageTest.TextureFormatCompatChromiumMutableNoStorageZirconVmo/*
+VulkanExternalImageTest.TextureFormatCompatChromiumZirconVmo/*
 WebGLCompatibilityTest.*
 WebGLFramebufferTest.*
 
@@ -104,25 +111,5 @@ LineLoopTest.DISABLED_DrawArraysWithLargeCount/*
 MipmapTest.DISABLED_ThreeLevelsInitData/*
 
 # Compile failed tests
-CopyTextureTest.CopyTextureInvalidTextureIds/*
-CubeMapTextureTest.RenderToFacesConsecutively/*
-EGLSyncTest.AndroidNativeFence_WaitSync/*
-ExplicitContextTest.GetProcAddress/*
 GetImageTest.*
-GetTexLevelParameterTest.Queries/*
-GLSLTest.InvariantGLPosition/*
-GLSLTest.MissingReturnVec4/*
-MemoryObjectTest.MemoryObjectQueries/*
-MemoryObjectTest.MemoryObjectShouldBeMemoryObject/*
-MemoryObjectTest.ShouldFailValidationOnImportFdUnsupportedHandleType/*
-PointSpritesTest.PointWithoutAttributesCompliance/*
-RobustBufferAccessBehaviorTest.EmptyBuffer/*
-RobustClientMemoryTest.*
 RobustResourceInitTest.*
-SemaphoreTest.*
-SimpleOperationTest.DrawTriangleFan/*
-SimpleStateChangeTest.DrawElementsThenDrawElementsNewIndexBuffer/*
-StateChangeTest.FramebufferIncompleteDepthAttachment/*
-Texture2DTest.CopySubImageFloat_RGB_R/*
-TextureRectangleTest.RenderToRectangle/*
-VulkanExternalImageTest.*

@@ -2526,6 +2526,7 @@ TEST_P(BlitFramebufferTest, BlitFramebufferSizeOverflow2)
 
 // Use this to select which configurations (e.g. which renderer, which GLES major version) these
 // tests should be run against.
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(BlitFramebufferANGLETest);
 ANGLE_INSTANTIATE_TEST(BlitFramebufferANGLETest,
                        ES2_D3D9(),
                        ES2_D3D11(),
@@ -2540,4 +2541,5 @@ ANGLE_INSTANTIATE_TEST(BlitFramebufferANGLETest,
                        ES2_METAL(),
                        WithNoShaderStencilOutput(ES2_METAL()));
 
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(BlitFramebufferTest);
 ANGLE_INSTANTIATE_TEST_ES3_AND(BlitFramebufferTest, WithNoShaderStencilOutput(ES3_METAL()));

@@ -37,14 +37,14 @@ class ShaderInfo final : angle::NonCopyable
 
     ANGLE_INLINE bool valid() const { return mIsInitialized; }
 
-    const gl::ShaderMap<SpirvBlob> &getSpirvBlobs() const { return mSpirvBlobs; }
+    const gl::ShaderMap<angle::spirv::Blob> &getSpirvBlobs() const { return mSpirvBlobs; }
 
     // Save and load implementation for GLES Program Binary support.
     void load(gl::BinaryInputStream *stream);
     void save(gl::BinaryOutputStream *stream);
 
   private:
-    gl::ShaderMap<SpirvBlob> mSpirvBlobs;
+    gl::ShaderMap<angle::spirv::Blob> mSpirvBlobs;
     bool mIsInitialized = false;
 };
 
@@ -53,8 +53,9 @@ struct ProgramTransformOptions final
     uint8_t enableLineRasterEmulation : 1;
     uint8_t removeEarlyFragmentTestsOptimization : 1;
     uint8_t surfaceRotation : 3;
-    uint8_t reserved : 3;  // must initialize to zero
-    static constexpr uint32_t kPermutationCount = 0x1 << 5;
+    uint8_t enableDepthCorrection : 1;
+    uint8_t reserved : 2;  // must initialize to zero
+    static constexpr uint32_t kPermutationCount = 0x1 << 6;
 };
 static_assert(sizeof(ProgramTransformOptions) == 1, "Size check failed");
 static_assert(static_cast<int>(SurfaceRotation::EnumCount) <= 8, "Size check failed");
@@ -68,6 +69,7 @@ class ProgramInfo final : angle::NonCopyable
     angle::Result initProgram(ContextVk *contextVk,
                               const gl::ShaderType shaderType,
                               bool isLastPreFragmentStage,
+                              bool isTransformFeedbackProgram,
                               const ShaderInfo &shaderInfo,
                               ProgramTransformOptions optionBits,
                               const ShaderInterfaceVariableInfoMap &variableInfoMap);
@@ -97,6 +99,14 @@ struct DefaultUniformBlock final : private angle::NonCopyable
     // Since the default blocks are laid out in std140, this tells us where to write on a call
     // to a setUniform method. They are arranged in uniform location order.
     std::vector<sh::BlockMemberInfo> uniformLayout;
+};
+
+// Performance and resource counters.
+using DescriptorSetCountList = angle::PackedEnumMap<DescriptorSetIndex, uint32_t>;
+
+struct ProgramExecutablePerfCounters
+{
+    DescriptorSetCountList descriptorSetsAllocated;
 };
 
 class ProgramExecutableVk
@@ -145,7 +155,7 @@ class ProgramExecutableVk
 
     angle::Result updateTexturesDescriptorSet(ContextVk *contextVk);
     angle::Result updateShaderResourcesDescriptorSet(ContextVk *contextVk,
-                                                     vk::ResourceUseList *resourceUseList,
+                                                     FramebufferVk *framebufferVk,
                                                      vk::CommandBufferHelper *commandBufferHelper);
     angle::Result updateTransformFeedbackDescriptorSet(
         const gl::ProgramState &programState,
@@ -153,6 +163,10 @@ class ProgramExecutableVk
         vk::BufferHelper *defaultUniformBuffer,
         ContextVk *contextVk,
         const vk::UniformsAndXfbDesc &xfbBufferDesc);
+    angle::Result updateInputAttachmentDescriptorSet(const gl::ProgramExecutable &executable,
+                                                     const gl::ShaderType shaderType,
+                                                     ContextVk *contextVk,
+                                                     FramebufferVk *framebufferVk);
 
     angle::Result updateDescriptorSets(ContextVk *contextVk, vk::CommandBuffer *commandBuffer);
 
@@ -169,14 +183,7 @@ class ProgramExecutableVk
         mProgramPipeline = pipeline;
     }
 
-    using DescriptorSetCountList = std::array<uint32_t, DescriptorSetIndex::EnumCount>;
-    // Performance and resource counters.
-    struct PerfCounters
-    {
-        DescriptorSetCountList descriptorSetsAllocated;
-    };
-
-    const PerfCounters getObjectPerfCounters() const { return mObjectPerfCounters; }
+    ProgramExecutablePerfCounters getAndResetObjectPerfCounters();
 
   private:
     friend class ProgramVk;
@@ -201,6 +208,9 @@ class ProgramExecutableVk
         vk::DescriptorSetLayoutDesc *descOut);
     void addImageDescriptorSetDesc(const gl::ProgramExecutable &executable,
                                    vk::DescriptorSetLayoutDesc *descOut);
+    void addInputAttachmentDescriptorSetDesc(const gl::ProgramExecutable &executable,
+                                             const gl::ShaderType shaderType,
+                                             vk::DescriptorSetLayoutDesc *descOut);
     void addTextureDescriptorSetDesc(const gl::ProgramState &programState,
                                      const gl::ActiveTextureArray<vk::TextureUnit> *activeTextures,
                                      vk::DescriptorSetLayoutDesc *descOut);
@@ -212,9 +222,10 @@ class ProgramExecutableVk
                                             ContextVk *contextVk);
     void updateTransformFeedbackDescriptorSetImpl(const gl::ProgramState &programState,
                                                   ContextVk *contextVk);
+    angle::Result getOrAllocateShaderResourcesDescriptorSet(ContextVk *contextVk,
+                                                            VkDescriptorSet *descriptorSetOut);
     angle::Result updateBuffersDescriptorSet(ContextVk *contextVk,
                                              const gl::ShaderType shaderType,
-                                             vk::ResourceUseList *resourceUseList,
                                              vk::CommandBufferHelper *commandBufferHelper,
                                              const std::vector<gl::InterfaceBlock> &blocks,
                                              VkDescriptorType descriptorType);
@@ -222,7 +233,6 @@ class ProgramExecutableVk
         const gl::ProgramState &programState,
         const gl::ShaderType shaderType,
         ContextVk *contextVk,
-        vk::ResourceUseList *resourceUseList,
         vk::CommandBufferHelper *commandBufferHelper);
     angle::Result updateImagesDescriptorSet(ContextVk *contextVk,
                                             const gl::ProgramExecutable &executable,
@@ -275,7 +285,7 @@ class ProgramExecutableVk
     ProgramVk *mProgram;
     ProgramPipelineVk *mProgramPipeline;
 
-    PerfCounters mObjectPerfCounters;
+    ProgramExecutablePerfCounters mObjectPerfCounters;
 };
 
 }  // namespace rx

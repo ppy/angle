@@ -1630,7 +1630,7 @@ TEST_P(ImageTest, Source2DTarget2DTargetTextureRespecifyColorspace)
 {
     EGLWindow *window = getEGLWindow();
     ANGLE_SKIP_TEST_IF(!hasOESExt() || !hasBaseExt() || !has2DTextureExt());
-    ANGLE_SKIP_TEST_IF(!IsGLExtensionEnabled("GL_EXT_texture_sRGB_override"));
+    ANGLE_SKIP_TEST_IF(!IsGLExtensionEnabled("GL_EXT_texture_format_sRGB_override"));
 
     // Create the Image
     GLuint source;
@@ -3867,8 +3867,8 @@ TEST_P(ImageTest, DeletedImageWithSameSizeAndFormat)
     glDeleteTextures(1, &texture);
 }
 
-// Use this to select which configurations (e.g. which renderer, which GLES major version) these
-// tests should be run against.
 ANGLE_INSTANTIATE_TEST_ES2_AND_ES3(ImageTest);
+
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(ImageTestES3);
 ANGLE_INSTANTIATE_TEST_ES3(ImageTestES3);
 }  // namespace angle

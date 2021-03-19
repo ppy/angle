@@ -33,6 +33,12 @@ class MultithreadingTest : public ANGLETest
         setConfigAlphaBits(8);
     }
 
+    bool hasFenceSyncExtension() const
+    {
+        return IsEGLDisplayExtensionEnabled(getEGLWindow()->getDisplay(), "EGL_KHR_fence_sync");
+    }
+    bool hasGLSyncExtension() const { return IsGLExtensionEnabled("GL_OES_EGL_sync"); }
+
     void runMultithreadedGLTest(
         std::function<void(EGLSurface surface, size_t threadIndex)> testBody,
         size_t threadCount)
@@ -263,6 +269,8 @@ TEST_P(MultithreadingTest, MultiContextDrawWithSwapBuffers)
 
     // http://anglebug.com/5099
     ANGLE_SKIP_TEST_IF(IsAndroid() && IsOpenGLES());
+    // http://anglebug.com/5099
+    ANGLE_SKIP_TEST_IF(IsWindows() && isSwiftshader());
 
     EGLWindow *window = getEGLWindow();
     EGLDisplay dpy    = window->getDisplay();
@@ -648,6 +656,43 @@ TEST_P(MultithreadingTestES3, MultithreadFenceTexImage)
     mainThreadDraw(false);
 }
 
+// Test that waiting on a sync object that hasn't been flushed and without a current context returns
+// TIMEOUT_EXPIRED or CONDITION_SATISFIED, but doesn't generate an error or crash.
+TEST_P(MultithreadingTest, NoFlushNoContextReturnsTimeout)
+{
+    ANGLE_SKIP_TEST_IF(!platformSupportsMultithreading());
+    ANGLE_SKIP_TEST_IF(!hasFenceSyncExtension() || !hasGLSyncExtension());
+
+    std::mutex mutex;
+
+    EGLWindow *window = getEGLWindow();
+    EGLDisplay dpy    = window->getDisplay();
+
+    glClearColor(1.0f, 0.0f, 1.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    EGLSyncKHR sync = eglCreateSyncKHR(dpy, EGL_SYNC_FENCE_KHR, nullptr);
+    EXPECT_NE(sync, EGL_NO_SYNC_KHR);
+
+    std::thread thread = std::thread([&]() {
+        std::lock_guard<decltype(mutex)> lock(mutex);
+        // Make sure there is no active context on this thread.
+        EXPECT_EGL_TRUE(eglMakeCurrent(dpy, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT));
+        EXPECT_EGL_SUCCESS();
+        // Don't wait forever to make sure the test terminates
+        constexpr GLuint64 kTimeout = 1'000'000'000;  // 1 second
+        int result                  = eglClientWaitSyncKHR(dpy, sync, 0, kTimeout);
+        // We typically expect to get back TIMEOUT_EXPIRED since the sync object was never flushed.
+        // However, the OpenGL ES backend returns CONDITION_SATISFIED, which is also a passing
+        // result.
+        ASSERT_TRUE(result == EGL_TIMEOUT_EXPIRED_KHR || result == EGL_CONDITION_SATISFIED_KHR);
+    });
+
+    thread.join();
+
+    EXPECT_EGL_TRUE(eglDestroySyncKHR(dpy, sync));
+}
+
 // TODO(geofflang): Test sharing a program between multiple shared contexts on multiple threads
 
 ANGLE_INSTANTIATE_TEST(MultithreadingTest,
@@ -658,6 +703,7 @@ ANGLE_INSTANTIATE_TEST(MultithreadingTest,
                        WithNoVirtualContexts(ES3_VULKAN()),
                        WithNoVirtualContexts(ES3_VULKAN_SWIFTSHADER()));
 
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(MultithreadingTestES3);
 ANGLE_INSTANTIATE_TEST(MultithreadingTestES3,
                        WithNoVirtualContexts(ES3_OPENGL()),
                        WithNoVirtualContexts(ES3_OPENGLES()),

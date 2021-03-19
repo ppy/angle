@@ -117,6 +117,7 @@ class RendererVk : angle::NonCopyable
 
     std::string getVendorString() const;
     std::string getRendererDescription() const;
+    std::string getVersionString() const;
 
     gl::Version getMaxSupportedESVersion() const;
     gl::Version getMaxConformantESVersion() const;
@@ -292,6 +293,8 @@ class RendererVk : angle::NonCopyable
         }
     }
 
+    egl::Display *getDisplay() const { return mDisplay; }
+
     VkResult getLastPresentResult(VkSwapchainKHR swapchain)
     {
         return mCommandProcessor.getLastPresentResult(swapchain);
@@ -361,6 +364,11 @@ class RendererVk : angle::NonCopyable
     // Log cache stats for all caches
     void logCacheStats() const;
 
+    VkPipelineStageFlags getSupportedVulkanPipelineStageMask() const
+    {
+        return mSupportedVulkanPipelineStageMask;
+    }
+
   private:
     angle::Result initializeDevice(DisplayVk *displayVk, uint32_t queueFamilyIndex);
     void ensureCapsInitialized() const;
@@ -368,6 +376,7 @@ class RendererVk : angle::NonCopyable
     void queryDeviceExtensionFeatures(const vk::ExtensionNameList &deviceExtensionNames);
 
     void initFeatures(DisplayVk *display, const vk::ExtensionNameList &extensions);
+    void initPipelineCacheVkKey();
     angle::Result initPipelineCache(DisplayVk *display,
                                     vk::PipelineCache *pipelineCache,
                                     bool *success);
@@ -410,6 +419,7 @@ class RendererVk : angle::NonCopyable
     VkPhysicalDeviceExternalMemoryHostPropertiesEXT mExternalMemoryHostProperties;
     VkPhysicalDeviceShaderFloat16Int8FeaturesKHR mShaderFloat16Int8Features;
     VkPhysicalDeviceDepthStencilResolvePropertiesKHR mDepthStencilResolveProperties;
+    VkPhysicalDeviceDriverPropertiesKHR mDriverProperties;
     VkExternalFenceProperties mExternalFenceProperties;
     VkExternalSemaphoreProperties mExternalSemaphoreProperties;
     VkPhysicalDeviceSamplerYcbcrConversionFeatures mSamplerYcbcrConversionFeatures;
@@ -435,6 +445,7 @@ class RendererVk : angle::NonCopyable
     // a lock.
     std::mutex mPipelineCacheMutex;
     vk::PipelineCache mPipelineCache;
+    egl::BlobCache::Key mPipelineCacheVkBlobKey;
     uint32_t mPipelineCacheVkUpdateTimeout;
     bool mPipelineCacheDirty;
     bool mPipelineCacheInitialized;
@@ -490,6 +501,17 @@ class RendererVk : angle::NonCopyable
     // Stats about all Vulkan object caches
     using VulkanCacheStats = angle::PackedEnumMap<VulkanCacheType, CacheStats>;
     VulkanCacheStats mVulkanCacheStats;
+
+    // A mask to filter out Vulkan pipeline stages that are not supported, applied in situations
+    // where multiple stages are prespecified (for example with image layout transitions):
+    //
+    // - Excludes GEOMETRY if geometry shaders are not supported.
+    // - Excludes TESSELLATION_CONTROL and TESSELLATION_EVALUATION if tessellation shaders are not
+    //   supported.
+    //
+    // Note that this mask can have bits set that don't correspond to valid stages, so it's strictly
+    // only useful for masking out unsupported stages in an otherwise valid set of stages.
+    VkPipelineStageFlags mSupportedVulkanPipelineStageMask;
 };
 
 }  // namespace rx

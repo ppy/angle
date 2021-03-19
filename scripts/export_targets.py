@@ -204,6 +204,7 @@ IGNORED_INCLUDES = {
     b'libANGLE/renderer/gl/wgl/DisplayWGL.h',
     b'libANGLE/renderer/metal/DisplayMtl_api.h',
     b'libANGLE/renderer/null/DisplayNULL.h',
+    b'libANGLE/renderer/vulkan/android/AHBFunctions.h',
     b'libANGLE/renderer/vulkan/android/DisplayVkAndroid.h',
     b'libANGLE/renderer/vulkan/fuchsia/DisplayVkFuchsia.h',
     b'libANGLE/renderer/vulkan/ggp/DisplayVkGGP.h',
@@ -230,6 +231,10 @@ IGNORED_INCLUDES = {
     b'vulkan_xcb.h',
     b'vulkan_xlib.h',
     b'vulkan_xlib_xrandr.h',
+# rapidjson adds these include stubs into their documentation
+# comments. Since the script doesn't skip comments they are
+# erroneously marked as valid includes
+    b'rapidjson/...',
 }
 
 IGNORED_INCLUDE_PREFIXES = {

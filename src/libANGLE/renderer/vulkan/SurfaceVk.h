@@ -168,6 +168,7 @@ struct SwapchainImage : angle::NonCopyable
     static constexpr size_t kPresentHistorySize = kSwapHistorySize + 1;
     std::array<ImagePresentHistory, kPresentHistorySize> presentHistory;
     size_t currentPresentHistoryIndex = 0;
+    uint64_t mFrameNumber             = 0;
 };
 }  // namespace impl
 
@@ -208,6 +209,8 @@ class WindowSurfaceVk : public SurfaceVk
     // width and height can change with client window resizing
     EGLint getWidth() const override;
     EGLint getHeight() const override;
+    EGLint getRotatedWidth() const;
+    EGLint getRotatedHeight() const;
     // Note: windows cannot be resized on Android.  The approach requires
     // calling vkGetPhysicalDeviceSurfaceCapabilitiesKHR.  However, that is
     // expensive; and there are troublesome timing issues for other parts of
@@ -232,7 +235,7 @@ class WindowSurfaceVk : public SurfaceVk
 
     vk::Semaphore getAcquireImageSemaphore();
 
-    VkSurfaceTransformFlagBitsKHR getPreTransform()
+    VkSurfaceTransformFlagBitsKHR getPreTransform() const
     {
         if (mEmulatedPreTransform != VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR)
         {
@@ -240,6 +243,8 @@ class WindowSurfaceVk : public SurfaceVk
         }
         return mPreTransform;
     }
+
+    egl::Error getBufferAge(const gl::Context *context, EGLint *age) override;
 
   protected:
     angle::Result swapImpl(const gl::Context *context,
@@ -338,6 +343,9 @@ class WindowSurfaceVk : public SurfaceVk
 
     // True when acquiring the next image is deferred.
     bool mNeedToAcquireNextSwapchainImage;
+
+    // EGL_EXT_buffer_age: Track frame count.
+    uint64_t mFrameCount;
 };
 
 }  // namespace rx

@@ -4,8 +4,8 @@
 // found in the LICENSE file.
 //
 // OutputVulkanGLSL:
-//   Code that outputs shaders that fit GL_KHR_vulkan_glsl.
-//   The shaders are then fed into glslang to spit out SPIR-V (libANGLE-side).
+//   Code that outputs shaders that fit GL_KHR_vulkan_glsl, to be fed to glslang to generate
+//   SPIR-V.
 //   See: https://www.khronos.org/registry/vulkan/specs/misc/GL_KHR_vulkan_glsl.txt
 //
 
@@ -53,12 +53,14 @@ void TOutputVulkanGLSL::writeLayoutQualifier(TIntermTyped *variable)
     bool needsSetBinding = IsSampler(type.getBasicType()) ||
                            (type.isInterfaceBlock() && (type.getQualifier() == EvqUniform ||
                                                         type.getQualifier() == EvqBuffer)) ||
-                           IsImage(type.getBasicType());
+                           IsImage(type.getBasicType()) || IsSubpassInputType(type.getBasicType());
     bool needsLocation = type.getQualifier() == EvqAttribute ||
                          type.getQualifier() == EvqVertexIn ||
                          type.getQualifier() == EvqFragmentOut || IsVarying(type.getQualifier());
+    bool needsInputAttachmentIndex = IsSubpassInputType(type.getBasicType());
 
-    if (!NeedsToWriteLayoutQualifier(type) && !needsSetBinding && !needsLocation)
+    if (!NeedsToWriteLayoutQualifier(type) && !needsSetBinding && !needsLocation &&
+        !needsInputAttachmentIndex)
     {
         return;
     }
@@ -109,11 +111,18 @@ void TOutputVulkanGLSL::writeLayoutQualifier(TIntermTyped *variable)
     const char *separator       = "";
     out << "layout(";
 
+    // If the resource declaration is about input attachment, need to specify input_attachment_index
+    if (needsInputAttachmentIndex)
+    {
+        out << "input_attachment_index=" << layoutQualifier.inputAttachmentIndex;
+        separator = kCommaSeparator;
+    }
+
     // If the resource declaration requires set & binding layout qualifiers, specify arbitrary
     // ones.
     if (needsSetBinding)
     {
-        out << "set=0, binding=" << nextUnusedBinding();
+        out << separator << "set=0, binding=" << nextUnusedBinding();
         separator = kCommaSeparator;
     }
 

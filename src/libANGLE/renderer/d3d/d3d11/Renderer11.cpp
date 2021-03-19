@@ -58,11 +58,14 @@
 #include "libANGLE/renderer/d3d/d3d11/formatutils11.h"
 #include "libANGLE/renderer/d3d/d3d11/renderer11_utils.h"
 #include "libANGLE/renderer/d3d/d3d11/texture_format_table.h"
+#include "libANGLE/renderer/d3d/driver_utils_d3d.h"
+#include "libANGLE/renderer/driver_utils.h"
 #include "libANGLE/renderer/dxgi_support_table.h"
 #include "libANGLE/renderer/renderer_utils.h"
 #include "libANGLE/trace.h"
 
 #ifdef ANGLE_ENABLE_WINDOWS_UWP
+#    include "libANGLE/renderer/d3d/d3d11/converged/CompositorNativeWindow11.h"
 #    include "libANGLE/renderer/d3d/d3d11/winrt/NativeWindow11WinRT.h"
 #else
 #    include "libANGLE/renderer/d3d/d3d11/converged/CompositorNativeWindow11.h"
@@ -1314,13 +1317,11 @@ void Renderer11::generateDisplayExtensions(egl::DisplayExtensions *outExtensions
     // All D3D feature levels support robust resource init
     outExtensions->robustResourceInitialization = true;
 
-#if !defined(ANGLE_ENABLE_WINDOWS_UWP)
     // Compositor Native Window capabilies require WinVer >= 1803
     if (CompositorNativeWindow11::IsSupportedWinRelease())
     {
         outExtensions->windowsUIComposition = true;
     }
-#endif
 }
 
 angle::Result Renderer11::flush(Context11 *context11)
@@ -1379,7 +1380,12 @@ bool Renderer11::isValidNativeWindow(EGLNativeWindowType window) const
                   "Pointer size must match Window Handle size");
 
 #if defined(ANGLE_ENABLE_WINDOWS_UWP)
-    return NativeWindow11WinRT::IsValidNativeWindow(window);
+    bool winrt = NativeWindow11WinRT::IsValidNativeWindow(window);
+    if (!winrt)
+    {
+        return CompositorNativeWindow11::IsValidNativeWindow(window);
+    }
+    return true;
 #else
     if (NativeWindow11Win32::IsValidNativeWindow(window))
     {
@@ -1395,9 +1401,19 @@ NativeWindowD3D *Renderer11::createNativeWindow(EGLNativeWindowType window,
                                                 const egl::AttributeMap &attribs) const
 {
 #if defined(ANGLE_ENABLE_WINDOWS_UWP)
-    return new NativeWindow11WinRT(window, config->alphaSize > 0);
+    auto useWinUiComp = window != nullptr && CompositorNativeWindow11::IsValidNativeWindow(window);
+    if (useWinUiComp)
+    {
+        return new CompositorNativeWindow11(window, config->alphaSize > 0);
+    }
+    else
+    {
+        return new NativeWindow11WinRT(window, config->alphaSize > 0);
+    }
+    return nullptr;
 #else
-    auto useWinUiComp = window != nullptr && !NativeWindow11Win32::IsValidNativeWindow(window);
+    auto useWinUiComp = window != nullptr && !NativeWindow11Win32::IsValidNativeWindow(window) &&
+                        CompositorNativeWindow11::IsValidNativeWindow(window);
 
     if (useWinUiComp)
     {
@@ -4290,8 +4306,25 @@ angle::Result Renderer11::getIncompleteTexture(const gl::Context *context,
     return GetImplAs<Context11>(context)->getIncompleteTexture(context, type, textureOut);
 }
 
+std::string Renderer11::getVendorString() const
+{
+    return GetVendorString(mAdapterDescription.VendorId);
+}
+
+std::string Renderer11::getVersionString() const
+{
+    std::ostringstream versionString;
+    versionString << "D3D11-";
+    if (mRenderer11DeviceCaps.driverVersion.valid())
+    {
+        versionString << GetDriverVersionString(mRenderer11DeviceCaps.driverVersion.value());
+    }
+    return versionString.str();
+}
+
 RendererD3D *CreateRenderer11(egl::Display *display)
 {
     return new Renderer11(display);
 }
+
 }  // namespace rx

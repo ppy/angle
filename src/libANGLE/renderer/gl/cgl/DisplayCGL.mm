@@ -460,12 +460,6 @@ egl::Error DisplayCGL::validateClientBuffer(const egl::Config *configuration,
     return egl::NoError();
 }
 
-std::string DisplayCGL::getVendorString() const
-{
-    // TODO(cwallez) find a useful vendor string
-    return "";
-}
-
 CGLContextObj DisplayCGL::getCGLContext() const
 {
     return mContext;
@@ -583,6 +577,11 @@ void DisplayCGL::populateFeatureList(angle::FeatureList *features)
     mRenderer->getFeatures().populateFeatureList(features);
 }
 
+RendererGL *DisplayCGL::getRenderer() const
+{
+    return mRenderer.get();
+}
+
 egl::Error DisplayCGL::referenceDiscreteGPU()
 {
     // Should have been rejected by validation if not supported.
@@ -659,6 +658,8 @@ egl::Error DisplayCGL::handleGPUSwitch()
             CGLSetCurrentContext(mContext);
             onStateChange(angle::SubjectMessage::SubjectChanged);
             mCurrentGPUID = gpuID;
+
+            mRenderer->handleGPUSwitch();
         }
     }
 

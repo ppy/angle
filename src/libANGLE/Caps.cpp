@@ -34,6 +34,8 @@ TextureCaps::TextureCaps() = default;
 
 TextureCaps::TextureCaps(const TextureCaps &other) = default;
 
+TextureCaps &TextureCaps::operator=(const TextureCaps &other) = default;
+
 TextureCaps::~TextureCaps() = default;
 
 GLuint TextureCaps::getMaxSamples() const
@@ -1002,7 +1004,7 @@ const ExtensionInfoMap &GetExtensionInfoMap()
         map["GL_CHROMIUM_bind_generates_resource"] = esOnlyExtension(&Extensions::bindGeneratesResource);
         map["GL_ANGLE_robust_client_memory"] = esOnlyExtension(&Extensions::robustClientMemory);
         map["GL_EXT_texture_sRGB_decode"] = esOnlyExtension(&Extensions::textureSRGBDecode);
-        map["GL_EXT_texture_sRGB_override"] = esOnlyExtension(&Extensions::textureSRGBOverride);
+        map["GL_EXT_texture_format_sRGB_override"] = esOnlyExtension(&Extensions::textureSRGBOverride);
         map["GL_EXT_sRGB_write_control"] = esOnlyExtension(&Extensions::sRGBWriteControl);
         map["GL_CHROMIUM_color_buffer_float_rgb"] = enableableExtension(&Extensions::colorBufferFloatRGB);
         map["GL_CHROMIUM_color_buffer_float_rgba"] = enableableExtension(&Extensions::colorBufferFloatRGBA);
@@ -1035,6 +1037,7 @@ const ExtensionInfoMap &GetExtensionInfoMap()
         map["GL_EXT_draw_elements_base_vertex"] = enableableExtension(&Extensions::drawElementsBaseVertexEXT);
         map["GL_EXT_gpu_shader5"] = enableableExtension(&Extensions::gpuShader5EXT);
         map["GL_APPLE_clip_distance"] = enableableExtension(&Extensions::clipDistanceAPPLE);
+        map["GL_EXT_clip_control"] = enableableExtension(&Extensions::clipControlEXT);
         map["GL_EXT_EGL_image_array"] = enableableExtension(&Extensions::eglImageArray);
         map["GL_EXT_buffer_storage"] = enableableExtension(&Extensions::bufferStorageEXT);
         map["GL_EXT_external_buffer"] = enableableExtension(&Extensions::externalBufferEXT);
@@ -1122,6 +1125,7 @@ void TypePrecision::get(GLint *returnRange, GLint *returnPrecision) const
 Caps::Caps()                  = default;
 Caps::Caps(const Caps &other) = default;
 Caps::~Caps()                 = default;
+Caps &Caps::operator=(const Caps &other) = default;
 
 Caps GenerateMinimumCaps(const Version &clientVersion, const Extensions &extensions)
 {
@@ -1470,6 +1474,7 @@ std::vector<std::string> DisplayExtensions::getStrings() const
     InsertExtensionString("EGL_NV_robustness_video_memory_purge",                robustnessVideoMemoryPurgeNV,       &extensionStrings);
     InsertExtensionString("EGL_KHR_reusable_sync",                               reusableSyncKHR,                    &extensionStrings);
     InsertExtensionString("EGL_ANGLE_external_context_and_surface",              externalContextAndSurface,          &extensionStrings);
+    InsertExtensionString("EGL_EXT_buffer_age",                                  bufferAgeEXT,                       &extensionStrings);
     // clang-format on
 
     return extensionStrings;

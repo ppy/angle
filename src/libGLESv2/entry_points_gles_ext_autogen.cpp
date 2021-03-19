@@ -13,19 +13,19 @@
 #include "common/entry_points_enum_autogen.h"
 #include "libANGLE/Context.h"
 #include "libANGLE/Context.inl.h"
-#include "libANGLE/capture_gles_ext_autogen.h"
+#include "libANGLE/capture/capture_gles_ext_autogen.h"
+#include "libANGLE/capture/gl_enum_utils.h"
 #include "libANGLE/entry_points_utils.h"
-#include "libANGLE/gl_enum_utils.h"
 #include "libANGLE/validationESEXT.h"
 #include "libGLESv2/global_state.h"
 
 using namespace gl;
 
-#include "libANGLE/capture_gles_1_0_autogen.h"
-#include "libANGLE/capture_gles_2_0_autogen.h"
-#include "libANGLE/capture_gles_3_0_autogen.h"
-#include "libANGLE/capture_gles_3_1_autogen.h"
-#include "libANGLE/capture_gles_3_2_autogen.h"
+#include "libANGLE/capture/capture_gles_1_0_autogen.h"
+#include "libANGLE/capture/capture_gles_2_0_autogen.h"
+#include "libANGLE/capture/capture_gles_3_0_autogen.h"
+#include "libANGLE/capture/capture_gles_3_1_autogen.h"
+#include "libANGLE/capture/capture_gles_3_2_autogen.h"
 #include "libANGLE/validationES1.h"
 #include "libANGLE/validationES2.h"
 #include "libANGLE/validationES3.h"
@@ -442,8 +442,8 @@ void GL_APIENTRY GL_GetTexLevelParameterivANGLE(GLenum target,
     Context *context = GetValidGlobalContext();
     EVENT(context, GLGetTexLevelParameterivANGLE,
           "context = %d, target = %s, level = %d, pname = %s, params = 0x%016" PRIxPTR "",
-          CID(context), GLenumToString(GLenumGroup::DefaultGroup, target), level,
-          GLenumToString(GLenumGroup::DefaultGroup, pname), (uintptr_t)params);
+          CID(context), GLenumToString(GLenumGroup::TextureTarget, target), level,
+          GLenumToString(GLenumGroup::GetTextureParameter, pname), (uintptr_t)params);
 
     if (context)
     {
@@ -4001,7 +4001,7 @@ void GL_APIENTRY GL_DiscardFramebufferEXT(GLenum target,
     Context *context = GetValidGlobalContext();
     EVENT(context, GLDiscardFramebufferEXT,
           "context = %d, target = %s, numAttachments = %d, attachments = 0x%016" PRIxPTR "",
-          CID(context), GLenumToString(GLenumGroup::DefaultGroup, target), numAttachments,
+          CID(context), GLenumToString(GLenumGroup::FramebufferTarget, target), numAttachments,
           (uintptr_t)attachments);
 
     if (context)
@@ -14270,7 +14270,7 @@ void GL_APIENTRY GL_DiscardFramebufferEXTContextANGLE(GLeglContext ctx,
     Context *context = static_cast<gl::Context *>(ctx);
     EVENT(context, GLDiscardFramebufferEXT,
           "context = %d, target = %s, numAttachments = %d, attachments = 0x%016" PRIxPTR "",
-          CID(context), GLenumToString(GLenumGroup::DefaultGroup, target), numAttachments,
+          CID(context), GLenumToString(GLenumGroup::FramebufferTarget, target), numAttachments,
           (uintptr_t)attachments);
 
     if (context && !context->isContextLost())
@@ -33085,8 +33085,8 @@ void GL_APIENTRY GL_GetTexLevelParameterivANGLEContextANGLE(GLeglContext ctx,
     Context *context = static_cast<gl::Context *>(ctx);
     EVENT(context, GLGetTexLevelParameterivANGLE,
           "context = %d, target = %s, level = %d, pname = %s, params = 0x%016" PRIxPTR "",
-          CID(context), GLenumToString(GLenumGroup::DefaultGroup, target), level,
-          GLenumToString(GLenumGroup::DefaultGroup, pname), (uintptr_t)params);
+          CID(context), GLenumToString(GLenumGroup::TextureTarget, target), level,
+          GLenumToString(GLenumGroup::GetTextureParameter, pname), (uintptr_t)params);
 
     if (context && !context->isContextLost())
     {

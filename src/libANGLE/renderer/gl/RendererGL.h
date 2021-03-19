@@ -97,9 +97,6 @@ class RendererGL : angle::NonCopyable
     void pushDebugGroup(GLenum source, GLuint id, const std::string &message);
     void popDebugGroup();
 
-    std::string getVendorString() const;
-    std::string getRendererDescription() const;
-
     GLint getGPUDisjoint();
     GLint64 getTimestamp();
 
@@ -137,6 +134,8 @@ class RendererGL : angle::NonCopyable
 
     void setNeedsFlushBeforeDeleteTextures();
     void flushIfNecessaryBeforeDeleteTextures();
+
+    void handleGPUSwitch();
 
   protected:
     virtual WorkerContext *createWorkerContext(std::string *infoLog) = 0;

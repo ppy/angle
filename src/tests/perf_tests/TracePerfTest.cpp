@@ -34,9 +34,6 @@ struct TracePerfParams final : public RenderTestParams
     // Common default options
     TracePerfParams()
     {
-        majorVersion = 3;
-        minorVersion = 1;
-
         // Display the frame after every drawBenchmark invocation
         iterationsPerStep = 1;
     }
@@ -321,6 +318,122 @@ TracePerfTest::TracePerfTest()
     if (param.testID == RestrictedTraceID::hearthstone)
     {
         addExtensionPrerequisite("GL_KHR_texture_compression_astc_ldr");
+    }
+
+    if (param.testID == RestrictedTraceID::efootball_pes_2021)
+    {
+        // TODO(https://anglebug.com/5517) Linux+Intel and Pixel 2 generate "Framebuffer is
+        // incomplete" errors with the Vulkan backend.
+        if (param.getRenderer() == EGL_PLATFORM_ANGLE_TYPE_VULKAN_ANGLE &&
+            ((IsLinux() && IsIntel()) || IsPixel2()))
+        {
+            mSkipTest = true;
+        }
+    }
+
+    if (param.testID == RestrictedTraceID::manhattan_31)
+    {
+        // TODO: http://anglebug.com/5591 Trace crashes on Pixel 2 in vulkan driver
+        if (IsPixel2() && param.getRenderer() == EGL_PLATFORM_ANGLE_TYPE_VULKAN_ANGLE)
+        {
+            mSkipTest = true;
+        }
+    }
+
+    if (param.testID == RestrictedTraceID::shadow_fight_2)
+    {
+        addExtensionPrerequisite("GL_OES_EGL_image_external");
+        addExtensionPrerequisite("GL_KHR_texture_compression_astc_ldr");
+    }
+
+    if (param.testID == RestrictedTraceID::rise_of_kingdoms)
+    {
+        addExtensionPrerequisite("GL_OES_EGL_image_external");
+    }
+
+    if (param.testID == RestrictedTraceID::happy_color)
+    {
+        if (IsWindows() && IsAMD() && param.getRenderer() == EGL_PLATFORM_ANGLE_TYPE_VULKAN_ANGLE)
+        {
+            mSkipTest = true;
+        }
+    }
+
+    if (param.testID == RestrictedTraceID::bus_simulator_indonesia)
+    {
+        // TODO(https://anglebug.com/5629) Linux+(Intel|AMD) native GLES generates
+        // GL_INVALID_OPERATION
+        if (IsLinux() && (IsIntel() || IsAMD()) &&
+            param.getRenderer() != EGL_PLATFORM_ANGLE_TYPE_VULKAN_ANGLE)
+        {
+            mSkipTest = true;
+        }
+    }
+
+    if (param.testID == RestrictedTraceID::messenger_lite)
+    {
+        // TODO: https://anglebug.com/5663 Incorrect pixels on Nvidia Windows for first frame
+        if (IsWindows() && IsNVIDIA() &&
+            param.getRenderer() == EGL_PLATFORM_ANGLE_TYPE_VULKAN_ANGLE)
+        {
+            mSkipTest = true;
+        }
+    }
+
+    if (param.testID == RestrictedTraceID::among_us)
+    {
+        addExtensionPrerequisite("GL_KHR_texture_compression_astc_ldr");
+    }
+
+    if (param.testID == RestrictedTraceID::car_parking_multiplayer)
+    {
+        // TODO: https://anglebug.com/5613 Nvidia native driver spews undefined behavior warnings
+        if (IsNVIDIA() && param.getRenderer() != EGL_PLATFORM_ANGLE_TYPE_VULKAN_ANGLE)
+        {
+            mSkipTest = true;
+        }
+        // TODO: https://anglebug.com/5724 Device lost on Win Intel
+        if (IsWindows() && IsIntel() && param.getRenderer() == EGL_PLATFORM_ANGLE_TYPE_VULKAN_ANGLE)
+        {
+            mSkipTest = true;
+        }
+    }
+
+    if (param.testID == RestrictedTraceID::rope_hero_vice_town)
+    {
+        // TODO: http://anglebug.com/5716 Trace crashes on Pixel 2 in vulkan driver
+        if (IsPixel2() && param.getRenderer() == EGL_PLATFORM_ANGLE_TYPE_VULKAN_ANGLE)
+        {
+            mSkipTest = true;
+        }
+    }
+
+    if (param.testID == RestrictedTraceID::extreme_car_driving_simulator)
+    {
+        addExtensionPrerequisite("GL_KHR_texture_compression_astc_ldr");
+    }
+
+    if (param.testID == RestrictedTraceID::lineage_m)
+    {
+        // TODO: http://anglebug.com/5748 Vulkan device is lost on Nvidia Linux
+        if (IsLinux() && IsNVIDIA() && param.getRenderer() == EGL_PLATFORM_ANGLE_TYPE_VULKAN_ANGLE)
+        {
+            mSkipTest = true;
+        }
+    }
+
+    if (param.testID == RestrictedTraceID::plants_vs_zombies_2)
+    {
+        // TODO: http://crbug.com/1187752 Corrupted image
+        if (IsWindows() && IsAMD() && param.getRenderer() == EGL_PLATFORM_ANGLE_TYPE_VULKAN_ANGLE)
+        {
+            mSkipTest = true;
+        }
+    }
+
+    if (param.testID == RestrictedTraceID::junes_journey)
+    {
+        addExtensionPrerequisite("GL_OES_EGL_image_external");
     }
 
     // We already swap in TracePerfTest::drawBenchmark, no need to swap again in the harness.
@@ -889,6 +1002,8 @@ TracePerfParams CombineTestID(const TracePerfParams &in, RestrictedTraceID id)
 
     TracePerfParams out = in;
     out.testID          = id;
+    out.majorVersion    = traceInfo.contextClientMajorVersion;
+    out.minorVersion    = traceInfo.contextClientMinorVersion;
     out.windowWidth     = traceInfo.drawSurfaceWidth;
     out.windowHeight    = traceInfo.drawSurfaceHeight;
     return out;

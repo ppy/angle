@@ -295,12 +295,17 @@ void RendererVk::ensureCapsInitialized() const
     // Enable GL_EXT_buffer_storage
     mNativeExtensions.bufferStorageEXT = true;
 
-    // To ensure that ETC2/EAC formats are enabled only on hardware that supports them natively,
-    // this flag is not set by the function above and must be set explicitly. It exposes
-    // ANGLE_compressed_texture_etc extension string.
-    mNativeExtensions.compressedTextureETC =
-        (mPhysicalDeviceFeatures.textureCompressionETC2 == VK_TRUE) &&
-        gl::DetermineCompressedTextureETCSupport(mNativeTextureCaps);
+    // When ETC2/EAC formats are natively supported, enable ANGLE-specific extension string to
+    // expose them to WebGL. In other case, mark potentially-available ETC1 extension as emulated.
+    if ((mPhysicalDeviceFeatures.textureCompressionETC2 == VK_TRUE) &&
+        gl::DetermineCompressedTextureETCSupport(mNativeTextureCaps))
+    {
+        mNativeExtensions.compressedTextureETC = true;
+    }
+    else
+    {
+        mNativeLimitations.emulatedEtc1 = true;
+    }
 
     // Vulkan doesn't support ASTC 3D block textures, which are required by
     // GL_OES_texture_compression_astc.
@@ -448,6 +453,12 @@ void RendererVk::ensureCapsInitialized() const
         vk::GetTextureSRGBOverrideSupport(this, mNativeExtensions);
     mNativeExtensions.textureSRGBDecode = vk::GetTextureSRGBDecodeSupport(this);
 
+    // Doesn't yet support glBlitFramebuffer
+    // http://anglebug.com/5075
+    // Will be fully enabled in a follow up change when issues with glBlitFramebuffer have been
+    // resolved
+    mNativeExtensions.sRGBWriteControl = false;
+
     // Vulkan natively supports io interface block.
     mNativeExtensions.shaderIoBlocksOES = true;
     mNativeExtensions.shaderIoBlocksEXT = true;
@@ -482,6 +493,12 @@ void RendererVk::ensureCapsInitialized() const
     constexpr unsigned int kNotSupportedSampleCounts = VK_SAMPLE_COUNT_64_BIT;
     mNativeExtensions.sampleVariablesOES =
         supportSampleRateShading && vk_gl::GetMaxSampleCount(kNotSupportedSampleCounts) == 0;
+
+    // Enable EXT_unpack_subimage
+    mNativeExtensions.unpackSubimage = true;
+
+    // Enable NV_pack_subimage
+    mNativeExtensions.packSubimage = true;
 
     mNativeCaps.minInterpolationOffset          = limitsVk.minInterpolationOffset;
     mNativeCaps.maxInterpolationOffset          = limitsVk.maxInterpolationOffset;
@@ -677,20 +694,21 @@ void RendererVk::ensureCapsInitialized() const
     // likely not very useful, so we use the same limit (4 + MAX_ATOMIC_COUNTER_BUFFERS) for the
     // vertex stage to determine if we would want to add support for atomic counter buffers.
     constexpr uint32_t kMinimumStorageBuffersForAtomicCounterBufferSupport =
-        gl::limits::kMinimumComputeStorageBuffers + gl::IMPLEMENTATION_MAX_ATOMIC_COUNTER_BUFFERS;
+        gl::limits::kMinimumComputeStorageBuffers +
+        gl::IMPLEMENTATION_MAX_ATOMIC_COUNTER_BUFFER_BINDINGS;
     uint32_t maxVertexStageAtomicCounterBuffers = 0;
     uint32_t maxPerStageAtomicCounterBuffers    = 0;
     uint32_t maxCombinedAtomicCounterBuffers    = 0;
 
     if (maxPerStageStorageBuffers >= kMinimumStorageBuffersForAtomicCounterBufferSupport)
     {
-        maxPerStageAtomicCounterBuffers = gl::IMPLEMENTATION_MAX_ATOMIC_COUNTER_BUFFERS;
-        maxCombinedAtomicCounterBuffers = gl::IMPLEMENTATION_MAX_ATOMIC_COUNTER_BUFFERS;
+        maxPerStageAtomicCounterBuffers = gl::IMPLEMENTATION_MAX_ATOMIC_COUNTER_BUFFER_BINDINGS;
+        maxCombinedAtomicCounterBuffers = gl::IMPLEMENTATION_MAX_ATOMIC_COUNTER_BUFFER_BINDINGS;
     }
 
     if (maxVertexStageStorageBuffers >= kMinimumStorageBuffersForAtomicCounterBufferSupport)
     {
-        maxVertexStageAtomicCounterBuffers = gl::IMPLEMENTATION_MAX_ATOMIC_COUNTER_BUFFERS;
+        maxVertexStageAtomicCounterBuffers = gl::IMPLEMENTATION_MAX_ATOMIC_COUNTER_BUFFER_BINDINGS;
     }
 
     maxVertexStageStorageBuffers -= maxVertexStageAtomicCounterBuffers;
@@ -754,13 +772,15 @@ void RendererVk::ensureCapsInitialized() const
     // GL Images correspond to Vulkan Storage Images.
     const int32_t maxPerStageImages = LimitToInt(limitsVk.maxPerStageDescriptorStorageImages);
     const int32_t maxCombinedImages = LimitToInt(limitsVk.maxDescriptorSetStorageImages);
-
-    mNativeCaps.maxShaderImageUniforms[gl::ShaderType::Vertex] =
+    const int32_t maxVertexPipelineImages =
         mPhysicalDeviceFeatures.vertexPipelineStoresAndAtomics ? maxPerStageImages : 0;
+
+    mNativeCaps.maxShaderImageUniforms[gl::ShaderType::Vertex]         = maxVertexPipelineImages;
+    mNativeCaps.maxShaderImageUniforms[gl::ShaderType::TessControl]    = maxVertexPipelineImages;
+    mNativeCaps.maxShaderImageUniforms[gl::ShaderType::TessEvaluation] = maxVertexPipelineImages;
+    mNativeCaps.maxShaderImageUniforms[gl::ShaderType::Geometry]       = maxVertexPipelineImages;
     mNativeCaps.maxShaderImageUniforms[gl::ShaderType::Fragment] =
         mPhysicalDeviceFeatures.fragmentStoresAndAtomics ? maxPerStageImages : 0;
-    mNativeCaps.maxShaderImageUniforms[gl::ShaderType::Geometry] =
-        mPhysicalDeviceFeatures.vertexPipelineStoresAndAtomics ? maxPerStageImages : 0;
     mNativeCaps.maxShaderImageUniforms[gl::ShaderType::Compute] = maxPerStageImages;
 
     mNativeCaps.maxCombinedImageUniforms = maxCombinedImages;
@@ -853,6 +873,11 @@ void RendererVk::ensureCapsInitialized() const
 
     mNativeCaps.subPixelBits = limitsVk.subPixelPrecisionBits;
 
+    // Enable GL_EXT_shader_framebuffer_fetch_non_coherent
+    // For supporting this extension, gl::IMPLEMENTATION_MAX_DRAW_BUFFERS is used.
+    mNativeExtensions.shaderFramebufferFetchNonCoherentEXT =
+        mNativeCaps.maxDrawBuffers >= gl::IMPLEMENTATION_MAX_DRAW_BUFFERS;
+
     // Enable Program Binary extension.
     mNativeExtensions.getProgramBinaryOES = true;
     mNativeCaps.programBinaryFormats.push_back(GL_PROGRAM_BINARY_ANGLE);
@@ -865,6 +890,9 @@ void RendererVk::ensureCapsInitialized() const
 
     // Enable GL_EXT_copy_image
     mNativeExtensions.copyImageEXT = true;
+
+    // GL_EXT_clip_control
+    mNativeExtensions.clipControlEXT = true;
 
     // Enable GL_EXT_texture_buffer and OES variant.  Nearly all formats required for this extension
     // are also required to have the UNIFORM_TEXEL_BUFFER feature bit in Vulkan, except for
@@ -925,7 +953,8 @@ void RendererVk::ensureCapsInitialized() const
 
         // TODO: tessellation shader support is incomplete.  http://anglebug.com/3572
         mNativeExtensions.tessellationShaderEXT =
-            getFeatures().exposeNonConformantExtensionsAndVersions.enabled;
+            mFeatures.supportsTransformFeedbackExtension.enabled &&
+            mFeatures.exposeNonConformantExtensionsAndVersions.enabled;
         mNativeCaps.maxPatchVertices = LimitToInt(limitsVk.maxTessellationPatchSize);
         mNativeCaps.maxTessPatchComponents =
             LimitToInt(limitsVk.maxTessellationControlPerPatchOutputComponents);
@@ -947,6 +976,16 @@ void RendererVk::ensureCapsInitialized() const
             mNativeCaps.maxCombinedUniformBlocks + kReservedTessellationDefaultUniformBindingCount);
         mNativeCaps.maxUniformBufferBindings = LimitToInt(
             mNativeCaps.maxUniformBufferBindings + kReservedTessellationDefaultUniformBindingCount);
+
+        mNativeCaps.maxShaderStorageBlocks[gl::ShaderType::TessControl] =
+            mNativeCaps.maxCombinedShaderOutputResources;
+        mNativeCaps.maxShaderAtomicCounterBuffers[gl::ShaderType::TessControl] =
+            maxCombinedAtomicCounterBuffers;
+
+        mNativeCaps.maxShaderStorageBlocks[gl::ShaderType::TessEvaluation] =
+            mNativeCaps.maxCombinedShaderOutputResources;
+        mNativeCaps.maxShaderAtomicCounterBuffers[gl::ShaderType::TessEvaluation] =
+            maxCombinedAtomicCounterBuffers;
     }
 
     // GL_APPLE_clip_distance/GL_EXT_clip_cull_distance
@@ -981,6 +1020,10 @@ void RendererVk::ensureCapsInitialized() const
             mNativeCaps.maxCombinedClipAndCullDistances = limitsVk.maxCombinedClipAndCullDistances;
         }
     }
+
+    // GL_EXT_blend_func_extended
+    mNativeExtensions.blendFuncExtended        = (mPhysicalDeviceFeatures.dualSrcBlend == VK_TRUE);
+    mNativeExtensions.maxDualSourceDrawBuffers = LimitToInt(limitsVk.maxFragmentDualSrcAttachments);
 }
 
 namespace vk

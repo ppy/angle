@@ -11,6 +11,7 @@
 
 #include <functional>
 
+#include "common/spirv/spirv_types.h"
 #include "libANGLE/renderer/ProgramImpl.h"
 #include "libANGLE/renderer/renderer_utils.h"
 
@@ -60,13 +61,13 @@ struct GlslangSpirvOptions
 {
     gl::ShaderType shaderType                 = gl::ShaderType::InvalidEnum;
     SurfaceRotation preRotation               = SurfaceRotation::Identity;
+    bool negativeViewportSupported            = false;
     bool transformPositionToVulkanClipSpace   = false;
     bool removeEarlyFragmentTestsOptimization = false;
     bool removeDebugInfo                      = false;
     bool isTransformFeedbackStage             = false;
+    bool isTransformFeedbackEmulated          = false;
 };
-
-using SpirvBlob = std::vector<uint32_t>;
 
 using GlslangErrorCallback = std::function<angle::Result(GlslangError)>;
 
@@ -74,9 +75,19 @@ struct ShaderInterfaceVariableXfbInfo
 {
     static constexpr uint32_t kInvalid = std::numeric_limits<uint32_t>::max();
 
+    // Used by both extension and emulation
     uint32_t buffer = kInvalid;
     uint32_t offset = kInvalid;
     uint32_t stride = kInvalid;
+
+    // Used only by emulation (array index support is missing from VK_EXT_transform_feedback)
+    uint32_t arraySize   = kInvalid;
+    uint32_t columnCount = kInvalid;
+    uint32_t rowCount    = kInvalid;
+    uint32_t arrayIndex  = kInvalid;
+    GLenum componentType = GL_FLOAT;
+    // If empty, the whole array is captured.  Otherwise only the specified members are captured.
+    std::vector<ShaderInterfaceVariableXfbInfo> arrayElements;
 };
 
 // Information for each shader interface variable.  Not all fields are relevant to each shader
@@ -97,6 +108,7 @@ struct ShaderInterfaceVariableInfo
     // locations in their respective slots.
     uint32_t location  = kInvalid;
     uint32_t component = kInvalid;
+    uint32_t index     = kInvalid;
     // The stages this shader interface variable is active.
     gl::ShaderBitSet activeStages;
     // Used for transform feedback extension to decorate vertex shader output.
@@ -167,14 +179,6 @@ bool GetImageNameWithoutIndices(std::string *name);
 std::string GlslangGetMappedSamplerName(const std::string &originalName);
 std::string GetXfbBufferName(const uint32_t bufferIndex);
 
-// NOTE: options.emulateTransformFeedback is ignored in this case. It is assumed to be always true.
-void GlslangGenTransformFeedbackEmulationOutputs(
-    const GlslangSourceOptions &options,
-    const gl::ProgramState &programState,
-    GlslangProgramInterfaceInfo *programInterfaceInfo,
-    std::string *vertexShader,
-    ShaderInterfaceVariableInfoMap *variableInfoMapOut);
-
 void GlslangAssignLocations(const GlslangSourceOptions &options,
                             const gl::ProgramState &programState,
                             const gl::ProgramVaryingPacking &varyingPacking,
@@ -198,19 +202,14 @@ void GlslangGetShaderSource(const GlslangSourceOptions &options,
 angle::Result GlslangTransformSpirvCode(const GlslangErrorCallback &callback,
                                         const GlslangSpirvOptions &options,
                                         const ShaderInterfaceVariableInfoMap &variableInfoMap,
-                                        const SpirvBlob &initialSpirvBlob,
-                                        SpirvBlob *spirvBlobOut);
+                                        const angle::spirv::Blob &initialSpirvBlob,
+                                        angle::spirv::Blob *spirvBlobOut);
 
 angle::Result GlslangGetShaderSpirvCode(const GlslangErrorCallback &callback,
                                         const gl::ShaderBitSet &linkedShaderStages,
                                         const gl::Caps &glCaps,
                                         const gl::ShaderMap<std::string> &shaderSources,
-                                        gl::ShaderMap<SpirvBlob> *spirvBlobsOut);
-
-angle::Result GlslangCompileShaderOneOff(const GlslangErrorCallback &callback,
-                                         gl::ShaderType shaderType,
-                                         const std::string &shaderSource,
-                                         SpirvBlob *spirvBlobOut);
+                                        gl::ShaderMap<angle::spirv::Blob> *spirvBlobsOut);
 
 }  // namespace rx
 

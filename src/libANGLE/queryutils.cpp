@@ -3270,6 +3270,7 @@ bool GetQueryParameterInfo(const State &glState,
             *numParams = 1;
             return true;
         case GL_MAX_CULL_DISTANCES_EXT:
+        case GL_MAX_COMBINED_CLIP_AND_CULL_DISTANCES_EXT:
             if (!extensions.clipCullDistanceEXT)
             {
                 return false;
@@ -3277,8 +3278,9 @@ bool GetQueryParameterInfo(const State &glState,
             *type      = GL_INT;
             *numParams = 1;
             return true;
-        case GL_MAX_COMBINED_CLIP_AND_CULL_DISTANCES_EXT:
-            if (!extensions.clipCullDistanceEXT)
+        case GL_CLIP_ORIGIN_EXT:
+        case GL_CLIP_DEPTH_MODE_EXT:
+            if (!extensions.clipControlEXT)
             {
                 return false;
             }
@@ -4156,6 +4158,7 @@ void QueryContextAttrib(const gl::Context *context, EGLint attribute, EGLint *va
 }
 
 egl::Error QuerySurfaceAttrib(const Display *display,
+                              const gl::Context *context,
                               const Surface *surface,
                               EGLint attribute,
                               EGLint *value)
@@ -4253,6 +4256,9 @@ egl::Error QuerySurfaceAttrib(const Display *display,
             break;
         case EGL_TIMESTAMPS_ANDROID:
             *value = surface->isTimestampsEnabled();
+            break;
+        case EGL_BUFFER_AGE_EXT:
+            ANGLE_TRY(surface->getBufferAge(context, value));
             break;
         default:
             UNREACHABLE();

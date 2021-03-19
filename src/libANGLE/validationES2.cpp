@@ -389,6 +389,8 @@ bool ValidateES2CopyTexImageParameters(const Context *context,
         framebuffer->getReadColorAttachment()->getFormat().info->sizedInternalFormat;
     const auto &formatInfo = *textureFormat.info;
 
+    ASSERT(!formatInfo.compressed);
+
     // [OpenGL ES 2.0.24] table 3.9
     if (isSubImage)
     {
@@ -467,22 +469,6 @@ bool ValidateES2CopyTexImageParameters(const Context *context,
                     return false;
                 }
                 break;
-            case GL_COMPRESSED_RGB_S3TC_DXT1_EXT:
-            case GL_COMPRESSED_RGBA_S3TC_DXT1_EXT:
-            case GL_COMPRESSED_RGBA_S3TC_DXT3_ANGLE:
-            case GL_COMPRESSED_RGBA_S3TC_DXT5_ANGLE:
-            case GL_ETC1_RGB8_OES:
-            case GL_ETC1_RGB8_LOSSY_DECODE_ANGLE:
-            case GL_COMPRESSED_RGB8_LOSSY_DECODE_ETC2_ANGLE:
-            case GL_COMPRESSED_SRGB8_LOSSY_DECODE_ETC2_ANGLE:
-            case GL_COMPRESSED_RGB8_PUNCHTHROUGH_ALPHA1_LOSSY_DECODE_ETC2_ANGLE:
-            case GL_COMPRESSED_SRGB8_PUNCHTHROUGH_ALPHA1_LOSSY_DECODE_ETC2_ANGLE:
-            case GL_COMPRESSED_RGBA_BPTC_UNORM_EXT:
-            case GL_COMPRESSED_SRGB_ALPHA_BPTC_UNORM_EXT:
-            case GL_COMPRESSED_RGB_BPTC_SIGNED_FLOAT_EXT:
-            case GL_COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT_EXT:
-                context->validationError(GL_INVALID_OPERATION, kInvalidFormat);
-                return false;
             case GL_DEPTH_COMPONENT:
             case GL_DEPTH_STENCIL_OES:
                 context->validationError(GL_INVALID_OPERATION, kInvalidFormat);
@@ -558,73 +544,6 @@ bool ValidateES2CopyTexImageParameters(const Context *context,
                     return false;
                 }
                 break;
-            case GL_COMPRESSED_RGB_S3TC_DXT1_EXT:
-            case GL_COMPRESSED_RGBA_S3TC_DXT1_EXT:
-                if (context->getExtensions().textureCompressionDXT1)
-                {
-                    context->validationError(GL_INVALID_OPERATION, kInvalidFormat);
-                    return false;
-                }
-                context->validationError(GL_INVALID_ENUM, kEnumNotSupported);
-                return false;
-            case GL_COMPRESSED_RGBA_S3TC_DXT3_ANGLE:
-                if (context->getExtensions().textureCompressionDXT3)
-                {
-                    context->validationError(GL_INVALID_OPERATION, kInvalidFormat);
-                    return false;
-                }
-                context->validationError(GL_INVALID_ENUM, kEnumNotSupported);
-                return false;
-            case GL_COMPRESSED_RGBA_S3TC_DXT5_ANGLE:
-                if (context->getExtensions().textureCompressionDXT5)
-                {
-                    context->validationError(GL_INVALID_OPERATION, kInvalidFormat);
-                    return false;
-                }
-                context->validationError(GL_INVALID_ENUM, kEnumNotSupported);
-                return false;
-            case GL_ETC1_RGB8_OES:
-                if (context->getExtensions().compressedETC1RGB8TextureOES)
-                {
-                    context->validationError(GL_INVALID_OPERATION, kInvalidFormat);
-                    return false;
-                }
-                context->validationError(GL_INVALID_ENUM, kEnumNotSupported);
-                return false;
-            case GL_ETC1_RGB8_LOSSY_DECODE_ANGLE:
-            case GL_COMPRESSED_RGB8_LOSSY_DECODE_ETC2_ANGLE:
-            case GL_COMPRESSED_SRGB8_LOSSY_DECODE_ETC2_ANGLE:
-            case GL_COMPRESSED_RGB8_PUNCHTHROUGH_ALPHA1_LOSSY_DECODE_ETC2_ANGLE:
-            case GL_COMPRESSED_SRGB8_PUNCHTHROUGH_ALPHA1_LOSSY_DECODE_ETC2_ANGLE:
-                if (context->getExtensions().lossyETCDecode)
-                {
-                    context->validationError(GL_INVALID_OPERATION, kInvalidFormat);
-                    return false;
-                }
-                context->validationError(GL_INVALID_ENUM, kEnumNotSupported);
-                return false;
-            case GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG:
-            case GL_COMPRESSED_RGB_PVRTC_2BPPV1_IMG:
-            case GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG:
-            case GL_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG:
-                if (context->getExtensions().compressedTexturePVRTC)
-                {
-                    context->validationError(GL_INVALID_OPERATION, kInvalidFormat);
-                    return false;
-                }
-                context->validationError(GL_INVALID_ENUM, kEnumNotSupported);
-                return false;
-            case GL_COMPRESSED_SRGB_PVRTC_2BPPV1_EXT:
-            case GL_COMPRESSED_SRGB_PVRTC_4BPPV1_EXT:
-            case GL_COMPRESSED_SRGB_ALPHA_PVRTC_2BPPV1_EXT:
-            case GL_COMPRESSED_SRGB_ALPHA_PVRTC_4BPPV1_EXT:
-                if (context->getExtensions().compressedTexturePVRTCsRGB)
-                {
-                    context->validationError(GL_INVALID_OPERATION, kInvalidFormat);
-                    return false;
-                }
-                context->validationError(GL_INVALID_ENUM, kEnumNotSupported);
-                return false;
             case GL_DEPTH_COMPONENT:
             case GL_DEPTH_COMPONENT16:
             case GL_DEPTH_COMPONENT32_OES:
@@ -799,130 +718,6 @@ bool IsValidESSLString(const char *str, size_t len)
         if (!IsValidESSLCharacter(str[i]))
         {
             return false;
-        }
-    }
-
-    return true;
-}
-
-bool IsValidESSLShaderSourceString(const char *str, size_t len, bool lineContinuationAllowed)
-{
-    enum class ParseState
-    {
-        // Have not seen an ASCII non-whitespace character yet on
-        // this line. Possible that we might see a preprocessor
-        // directive.
-        BEGINING_OF_LINE,
-
-        // Have seen at least one ASCII non-whitespace character
-        // on this line.
-        MIDDLE_OF_LINE,
-
-        // Handling a preprocessor directive. Passes through all
-        // characters up to the end of the line. Disables comment
-        // processing.
-        IN_PREPROCESSOR_DIRECTIVE,
-
-        // Handling a single-line comment. The comment text is
-        // replaced with a single space.
-        IN_SINGLE_LINE_COMMENT,
-
-        // Handling a multi-line comment. Newlines are passed
-        // through to preserve line numbers.
-        IN_MULTI_LINE_COMMENT
-    };
-
-    ParseState state = ParseState::BEGINING_OF_LINE;
-    size_t pos       = 0;
-
-    while (pos < len)
-    {
-        char c    = str[pos];
-        char next = pos + 1 < len ? str[pos + 1] : 0;
-
-        // Check for newlines
-        if (c == '\n' || c == '\r')
-        {
-            if (state != ParseState::IN_MULTI_LINE_COMMENT)
-            {
-                state = ParseState::BEGINING_OF_LINE;
-            }
-
-            pos++;
-            continue;
-        }
-
-        switch (state)
-        {
-            case ParseState::BEGINING_OF_LINE:
-                if (c == ' ')
-                {
-                    // Maintain the BEGINING_OF_LINE state until a non-space is seen
-                    pos++;
-                }
-                else if (c == '#')
-                {
-                    state = ParseState::IN_PREPROCESSOR_DIRECTIVE;
-                    pos++;
-                }
-                else
-                {
-                    // Don't advance, re-process this character with the MIDDLE_OF_LINE state
-                    state = ParseState::MIDDLE_OF_LINE;
-                }
-                break;
-
-            case ParseState::MIDDLE_OF_LINE:
-                if (c == '/' && next == '/')
-                {
-                    state = ParseState::IN_SINGLE_LINE_COMMENT;
-                    pos++;
-                }
-                else if (c == '/' && next == '*')
-                {
-                    state = ParseState::IN_MULTI_LINE_COMMENT;
-                    pos++;
-                }
-                else if (lineContinuationAllowed && c == '\\' && (next == '\n' || next == '\r'))
-                {
-                    // Skip line continuation characters
-                }
-                else if (!IsValidESSLCharacter(c))
-                {
-                    return false;
-                }
-                pos++;
-                break;
-
-            case ParseState::IN_PREPROCESSOR_DIRECTIVE:
-                // Line-continuation characters may not be permitted.
-                // Otherwise, just pass it through. Do not parse comments in this state.
-                if (!lineContinuationAllowed && c == '\\')
-                {
-                    return false;
-                }
-                pos++;
-                break;
-
-            case ParseState::IN_SINGLE_LINE_COMMENT:
-                // Line-continuation characters are processed before comment processing.
-                // Advance string if a new line character is immediately behind
-                // line-continuation character.
-                if (c == '\\' && (next == '\n' || next == '\r'))
-                {
-                    pos++;
-                }
-                pos++;
-                break;
-
-            case ParseState::IN_MULTI_LINE_COMMENT:
-                if (c == '*' && next == '/')
-                {
-                    state = ParseState::MIDDLE_OF_LINE;
-                    pos++;
-                }
-                pos++;
-                break;
         }
     }
 
@@ -1436,77 +1231,6 @@ bool ValidateES2TexImageParametersBase(const Context *context,
 
         switch (format)
         {
-            case GL_COMPRESSED_RGB_S3TC_DXT1_EXT:
-            case GL_COMPRESSED_RGBA_S3TC_DXT1_EXT:
-                if (context->getExtensions().textureCompressionDXT1)
-                {
-                    context->validationError(GL_INVALID_OPERATION, kInvalidFormat);
-                    return false;
-                }
-                else
-                {
-                    context->validationError(GL_INVALID_ENUM, kEnumNotSupported);
-                    return false;
-                }
-                break;
-            case GL_COMPRESSED_RGBA_S3TC_DXT3_ANGLE:
-                if (context->getExtensions().textureCompressionDXT3)
-                {
-                    context->validationError(GL_INVALID_OPERATION, kInvalidFormat);
-                    return false;
-                }
-                context->validationError(GL_INVALID_ENUM, kEnumNotSupported);
-                return false;
-            case GL_COMPRESSED_RGBA_S3TC_DXT5_ANGLE:
-                if (context->getExtensions().textureCompressionDXT5)
-                {
-                    context->validationError(GL_INVALID_OPERATION, kInvalidFormat);
-                    return false;
-                }
-                context->validationError(GL_INVALID_ENUM, kEnumNotSupported);
-                return false;
-            case GL_ETC1_RGB8_OES:
-                if (context->getExtensions().compressedETC1RGB8TextureOES)
-                {
-                    context->validationError(GL_INVALID_OPERATION, kInvalidFormat);
-                    return false;
-                }
-                context->validationError(GL_INVALID_ENUM, kEnumNotSupported);
-                return false;
-            case GL_ETC1_RGB8_LOSSY_DECODE_ANGLE:
-            case GL_COMPRESSED_RGB8_LOSSY_DECODE_ETC2_ANGLE:
-            case GL_COMPRESSED_SRGB8_LOSSY_DECODE_ETC2_ANGLE:
-            case GL_COMPRESSED_RGB8_PUNCHTHROUGH_ALPHA1_LOSSY_DECODE_ETC2_ANGLE:
-            case GL_COMPRESSED_SRGB8_PUNCHTHROUGH_ALPHA1_LOSSY_DECODE_ETC2_ANGLE:
-                if (context->getExtensions().lossyETCDecode)
-                {
-                    context->validationError(GL_INVALID_OPERATION, kInvalidFormat);
-                    return false;
-                }
-                context->validationError(GL_INVALID_ENUM, kEnumNotSupported);
-                return false;
-            case GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG:
-            case GL_COMPRESSED_RGB_PVRTC_2BPPV1_IMG:
-            case GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG:
-            case GL_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG:
-                if (context->getExtensions().compressedTexturePVRTC)
-                {
-                    context->validationError(GL_INVALID_OPERATION, kInvalidFormat);
-                    return false;
-                }
-                context->validationError(GL_INVALID_ENUM, kEnumNotSupported);
-                return false;
-            case GL_COMPRESSED_SRGB_PVRTC_2BPPV1_EXT:
-            case GL_COMPRESSED_SRGB_PVRTC_4BPPV1_EXT:
-            case GL_COMPRESSED_SRGB_ALPHA_PVRTC_2BPPV1_EXT:
-            case GL_COMPRESSED_SRGB_ALPHA_PVRTC_4BPPV1_EXT:
-                if (context->getExtensions().compressedTexturePVRTCsRGB)
-                {
-                    context->validationError(GL_INVALID_OPERATION, kInvalidFormat);
-                    return false;
-                }
-                context->validationError(GL_INVALID_ENUM, kEnumNotSupported);
-                return false;
             case GL_DEPTH_COMPONENT:
             case GL_DEPTH_STENCIL_OES:
                 if (!context->getExtensions().depthTextureANGLE &&
@@ -3741,7 +3465,7 @@ bool ValidateCreateShader(const Context *context, ShaderType type)
             break;
 
         case ShaderType::Compute:
-            if (context->getClientVersion() < Version(3, 1))
+            if (context->getClientVersion() < ES_3_1)
             {
                 context->validationError(GL_INVALID_ENUM, kES31Required);
                 return false;
@@ -3749,7 +3473,7 @@ bool ValidateCreateShader(const Context *context, ShaderType type)
             break;
 
         case ShaderType::Geometry:
-            if (!context->getExtensions().geometryShader)
+            if (!context->getExtensions().geometryShader && context->getClientVersion() < ES_3_2)
             {
                 context->validationError(GL_INVALID_ENUM, kInvalidShaderType);
                 return false;
@@ -3757,7 +3481,8 @@ bool ValidateCreateShader(const Context *context, ShaderType type)
             break;
 
         case ShaderType::TessControl:
-            if (!context->getExtensions().tessellationShaderEXT)
+            if (!context->getExtensions().tessellationShaderEXT &&
+                context->getClientVersion() < ES_3_2)
             {
                 context->validationError(GL_INVALID_ENUM, kInvalidShaderType);
                 return false;
@@ -3765,7 +3490,8 @@ bool ValidateCreateShader(const Context *context, ShaderType type)
             break;
 
         case ShaderType::TessEvaluation:
-            if (!context->getExtensions().tessellationShaderEXT)
+            if (!context->getExtensions().tessellationShaderEXT &&
+                context->getClientVersion() < ES_3_2)
             {
                 context->validationError(GL_INVALID_ENUM, kInvalidShaderType);
                 return false;
@@ -4959,25 +4685,6 @@ bool ValidateShaderSource(const Context *context,
     {
         context->validationError(GL_INVALID_VALUE, kNegativeCount);
         return false;
-    }
-
-    // The WebGL spec (section 6.20) disallows strings containing invalid ESSL characters for
-    // shader-related entry points
-    if (context->getExtensions().webglCompatibility)
-    {
-        for (GLsizei i = 0; i < count; i++)
-        {
-            size_t len =
-                (length && length[i] >= 0) ? static_cast<size_t>(length[i]) : strlen(string[i]);
-
-            // Backslash as line-continuation is allowed in WebGL 2.0.
-            if (!IsValidESSLShaderSourceString(string[i], len,
-                                               context->getClientVersion() >= ES_3_0))
-            {
-                context->validationError(GL_INVALID_VALUE, kShaderSourceInvalidCharacters);
-                return false;
-            }
-        }
     }
 
     Shader *shaderObject = GetValidShader(context, shader);

@@ -582,12 +582,6 @@ egl::Error DisplayWGL::validateClientBuffer(const egl::Config *configuration,
     }
 }
 
-std::string DisplayWGL::getVendorString() const
-{
-    // UNIMPLEMENTED();
-    return "";
-}
-
 egl::Error DisplayWGL::initializeD3DDevice()
 {
     if (mD3D11Device != nullptr)
@@ -1053,6 +1047,11 @@ void DisplayWGL::initializeFrontendFeatures(angle::FrontendFeatures *features) c
 void DisplayWGL::populateFeatureList(angle::FeatureList *features)
 {
     mRenderer->getFeatures().populateFeatureList(features);
+}
+
+RendererGL *DisplayWGL::getRenderer() const
+{
+    return reinterpret_cast<RendererGL *>(mRenderer.get());
 }
 
 }  // namespace rx

@@ -787,12 +787,6 @@ bool DisplayGLX::isValidNativeWindow(EGLNativeWindowType window) const
     return status != 0;
 }
 
-std::string DisplayGLX::getVendorString() const
-{
-    // UNIMPLEMENTED();
-    return "";
-}
-
 egl::Error DisplayGLX::waitClient(const gl::Context *context)
 {
     mGLX.waitGL();
@@ -1078,6 +1072,11 @@ void DisplayGLX::initializeFrontendFeatures(angle::FrontendFeatures *features) c
 void DisplayGLX::populateFeatureList(angle::FeatureList *features)
 {
     mRenderer->getFeatures().populateFeatureList(features);
+}
+
+RendererGL *DisplayGLX::getRenderer() const
+{
+    return mRenderer.get();
 }
 
 }  // namespace rx

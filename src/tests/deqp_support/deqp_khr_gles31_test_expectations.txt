@@ -22,6 +22,10 @@
 //// General Vulkan expectations
 ////
 
+// Test bug with missing glMemoryBarrier call
+5673 VULKAN : KHR-GLES31.core.texture_buffer.texture_buffer_operations_transform_feedback = FAIL
+5673 VULKAN : KHR-GLES31.core.compute_shader.pipeline-post-xfb = FAIL
+
 // Framebuffer without attachments:
 3579 VULKAN : KHR-GLES31.core.framebuffer_no_attachments.api = FAIL
 
@@ -58,11 +62,11 @@
 4723 VULKAN NVIDIA : KHR-GLES31.core.shader_image_size.advanced-nonMS-vs-uint = SKIP
 4723 VULKAN NVIDIA : KHR-GLES31.core.program_interface_query.transform-feedback-types = SKIP
 
-// Incompatible between incomplete texture and sampler format (isampler2D or usampler2D):
-3588 VULKAN : KHR-GLES31.core.sample_variables.mask.rgba8*i.* = FAIL
-
 // Geometry shader support
 5483 VULKAN : KHR-GLES31.core.draw_indirect.basic-mode-*adjacency = SKIP
+
+// New failures with latest dEQP roll (2021-03-05)
+5722 VULKAN : KHR-GLES31.core.framebuffer_completeness.rbo_and_texture_expect_zero_numsamples = FAIL
 
 ////
 //// Desktop Vulkan expectations
@@ -78,6 +82,13 @@
 4128 VULKAN NVIDIA : KHR-GLES31.core.shader_storage_buffer_object.advanced-unsizedArrayLength-cs-*-matR* = SKIP
 4128 VULKAN NVIDIA : KHR-GLES31.core.shader_storage_buffer_object.advanced-unsizedArrayLength-vs-*-matR* = SKIP
 4128 VULKAN NVIDIA : KHR-GLES31.core.shader_storage_buffer_object.advanced-unsizedArrayLength-fs-*-matR* = SKIP
+
+////
+//// SwANGLE expectations
+////
+
+// Flaky on Windows SwANGLE
+5755 WIN SWIFTSHADER : KHR-GLES31.core.arrays_of_arrays.SizedDeclarationsPrimitive = SKIP
 
 
 ////
@@ -96,7 +107,7 @@
 4159 VULKAN PIXEL2ORXL : KHR-GLES31.core.draw_indirect.advanced-twoPass-transformFeedback-arrays = FAIL
 
 // Fails to link the shader program on Pixel2 and Pixel2 XL
-3588 VULKAN PIXEL2ORXL : KHR-GLES31.core.sample_variables.mask.rgba8.samples_*.mask_* = FAIL
+5572 VULKAN PIXEL2ORXL : KHR-GLES31.core.sample_variables.mask.rgba8*.samples_*.mask_* = FAIL
 
 // Failing on Android with SwiftShader
 4300 SWIFTSHADER ANDROID : KHR-GLES31.core.shader_integer_mix.mix-bvec4 = FAIL

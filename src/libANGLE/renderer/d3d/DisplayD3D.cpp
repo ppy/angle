@@ -353,15 +353,31 @@ void DisplayD3D::generateExtensions(egl::DisplayExtensions *outExtensions) const
     mRenderer->generateDisplayExtensions(outExtensions);
 }
 
-std::string DisplayD3D::getVendorString() const
+std::string DisplayD3D::getRendererDescription()
 {
-    std::string vendorString = "Google Inc.";
     if (mRenderer)
     {
-        vendorString += " " + mRenderer->getVendorString();
+        return mRenderer->getRendererDescription();
     }
+    return std::string();
+}
 
-    return vendorString;
+std::string DisplayD3D::getVendorString()
+{
+    if (mRenderer)
+    {
+        return mRenderer->getVendorString();
+    }
+    return std::string();
+}
+
+std::string DisplayD3D::getVersionString()
+{
+    if (mRenderer)
+    {
+        return mRenderer->getVersionString();
+    }
+    return std::string();
 }
 
 void DisplayD3D::generateCaps(egl::Caps *outCaps) const

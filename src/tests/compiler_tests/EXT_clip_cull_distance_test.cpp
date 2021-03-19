@@ -46,6 +46,7 @@ const char VertexShaderCompileSucceeds2[] =
         gl_CullDistance[gl_MaxCullDistances - int(aPosition.x)] = dot(aPosition, uPlane);
     })";
 
+#if defined(ANGLE_ENABLE_VULKAN)
 // Shader using gl_ClipDistance and gl_CullDistance
 // But, the sum of the sizes is greater than gl_MaxCombinedClipAndCullDistances
 const char VertexShaderCompileFails1[] =
@@ -137,6 +138,7 @@ const char VertexShaderCompileFailes6[] =
         gl_Position = aPosition;
         gl_ClipDistance[0] = 0.0;
     })";
+#endif
 
 // Shader using gl_ClipDistance and gl_CullDistance
 const char FragmentShaderCompileSucceeds1[] =
@@ -166,6 +168,7 @@ const char FragmentShaderCompileSucceeds2[] =
         fragColor.w = gl_CullDistance[gl_MaxCullDistances - int(aPosition.x)];
     })";
 
+#if defined(ANGLE_ENABLE_VULKAN)
 // Shader using gl_ClipDistance and gl_CullDistance
 // But, the sum of the sizes is greater than gl_MaxCombinedClipAndCullDistances
 const char FragmentShaderCompileFails1[] =
@@ -236,6 +239,7 @@ const char FragmentShaderCompileFails5[] =
         }
         fragColor = vec4(color[0], color[1], color[2], 1.0f);
     })";
+#endif
 
 class EXTClipCullDistanceTest : public sh::ShaderExtensionTest
 {
@@ -319,7 +323,7 @@ TEST_P(EXTClipCullDistanceForVertexShaderTest, CompileSucceedsVulkan)
     mResources.MaxCullDistances                = 8;
     mResources.MaxCombinedClipAndCullDistances = 8;
 
-    InitializeCompiler(SH_GLSL_VULKAN_OUTPUT);
+    InitializeCompiler(SH_SPIRV_VULKAN_OUTPUT);
     EXPECT_TRUE(TestShaderCompile(EXTPragma));
     EXPECT_FALSE(TestShaderCompile(""));
     EXPECT_TRUE(TestShaderCompile(EXTPragma));
@@ -354,12 +358,11 @@ TEST_P(EXTClipCullDistanceForFragmentShaderTest, CompileSucceedsVulkan)
     mResources.MaxCullDistances                = 8;
     mResources.MaxCombinedClipAndCullDistances = 8;
 
-    InitializeCompiler(SH_GLSL_VULKAN_OUTPUT);
+    InitializeCompiler(SH_SPIRV_VULKAN_OUTPUT);
     EXPECT_TRUE(TestShaderCompile(EXTPragma));
     EXPECT_FALSE(TestShaderCompile(""));
     EXPECT_TRUE(TestShaderCompile(EXTPragma));
 }
-#endif
 
 class EXTClipCullDistanceForVertexShaderCompileFailureTest
     : public EXTClipCullDistanceForVertexShaderTest
@@ -369,7 +372,6 @@ class EXTClipCullDistanceForFragmentShaderCompileFailureTest
     : public EXTClipCullDistanceForFragmentShaderTest
 {};
 
-#if defined(ANGLE_ENABLE_VULKAN)
 TEST_P(EXTClipCullDistanceForVertexShaderCompileFailureTest, CompileFails)
 {
     SetExtensionEnable(true);
@@ -378,7 +380,7 @@ TEST_P(EXTClipCullDistanceForVertexShaderCompileFailureTest, CompileFails)
     mResources.MaxCullDistances                = 8;
     mResources.MaxCombinedClipAndCullDistances = 8;
 
-    InitializeCompiler(SH_GLSL_VULKAN_OUTPUT);
+    InitializeCompiler(SH_SPIRV_VULKAN_OUTPUT);
     EXPECT_FALSE(TestShaderCompile(EXTPragma));
 }
 
@@ -390,16 +392,10 @@ TEST_P(EXTClipCullDistanceForFragmentShaderCompileFailureTest, CompileFails)
     mResources.MaxCullDistances                = 8;
     mResources.MaxCombinedClipAndCullDistances = 8;
 
-    InitializeCompiler(SH_GLSL_VULKAN_OUTPUT);
+    InitializeCompiler(SH_SPIRV_VULKAN_OUTPUT);
     EXPECT_FALSE(TestShaderCompile(EXTPragma));
 }
 #endif
-
-INSTANTIATE_TEST_SUITE_P(IncorrectESSL100Shaders,
-                         EXTClipCullDistanceForVertexShaderCompileFailureTest,
-                         Combine(Values(SH_GLES2_SPEC),
-                                 Values(sh::ESSLVersion100),
-                                 Values(VertexShaderCompileFails5, VertexShaderCompileFailes6)));
 
 INSTANTIATE_TEST_SUITE_P(CorrectESSL300Shaders,
                          EXTClipCullDistanceForVertexShaderTest,
@@ -407,6 +403,22 @@ INSTANTIATE_TEST_SUITE_P(CorrectESSL300Shaders,
                                  Values(sh::ESSLVersion300),
                                  Values(VertexShaderCompileSucceeds1,
                                         VertexShaderCompileSucceeds2)));
+
+INSTANTIATE_TEST_SUITE_P(CorrectESSL300Shaders,
+                         EXTClipCullDistanceForFragmentShaderTest,
+                         Combine(Values(SH_GLES3_SPEC),
+                                 Values(sh::ESSLVersion300),
+                                 Values(FragmentShaderCompileSucceeds1,
+                                        FragmentShaderCompileSucceeds2)));
+
+// The corresponding TEST_Ps are defined only when ANGLE_ENABLE_VULKAN is
+// defined.
+#if defined(ANGLE_ENABLE_VULKAN)
+INSTANTIATE_TEST_SUITE_P(IncorrectESSL100Shaders,
+                         EXTClipCullDistanceForVertexShaderCompileFailureTest,
+                         Combine(Values(SH_GLES2_SPEC),
+                                 Values(sh::ESSLVersion100),
+                                 Values(VertexShaderCompileFails5, VertexShaderCompileFailes6)));
 
 INSTANTIATE_TEST_SUITE_P(IncorrectESSL300Shaders,
                          EXTClipCullDistanceForVertexShaderCompileFailureTest,
@@ -417,13 +429,6 @@ INSTANTIATE_TEST_SUITE_P(IncorrectESSL300Shaders,
                                         VertexShaderCompileFails3,
                                         VertexShaderCompileFails4)));
 
-INSTANTIATE_TEST_SUITE_P(CorrectESSL300Shaders,
-                         EXTClipCullDistanceForFragmentShaderTest,
-                         Combine(Values(SH_GLES3_SPEC),
-                                 Values(sh::ESSLVersion300),
-                                 Values(FragmentShaderCompileSucceeds1,
-                                        FragmentShaderCompileSucceeds2)));
-
 INSTANTIATE_TEST_SUITE_P(IncorrectESSL300Shaders,
                          EXTClipCullDistanceForFragmentShaderCompileFailureTest,
                          Combine(Values(SH_GLES3_SPEC),
@@ -433,5 +438,6 @@ INSTANTIATE_TEST_SUITE_P(IncorrectESSL300Shaders,
                                         FragmentShaderCompileFails3,
                                         FragmentShaderCompileFails4,
                                         FragmentShaderCompileFails5)));
+#endif
 
 }  // anonymous namespace

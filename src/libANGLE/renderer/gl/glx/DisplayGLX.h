@@ -70,8 +70,6 @@ class DisplayGLX : public DisplayGL
 
     bool isValidNativeWindow(EGLNativeWindowType window) const override;
 
-    std::string getVendorString() const override;
-
     egl::Error waitClient(const gl::Context *context) override;
     egl::Error waitNative(const gl::Context *context, EGLint engine) override;
 
@@ -98,7 +96,7 @@ class DisplayGLX : public DisplayGL
 
     void populateFeatureList(angle::FeatureList *features) override;
 
-    RendererGL *getRenderer() const { return mRenderer.get(); }
+    RendererGL *getRenderer() const override;
 
   private:
     egl::Error initializeContext(glx::FBConfig config,

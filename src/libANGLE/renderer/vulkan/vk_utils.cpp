@@ -905,6 +905,7 @@ void InitGetPhysicalDeviceProperties2KHRFunctions(VkInstance instance)
 {
     GET_INSTANCE_FUNC(vkGetPhysicalDeviceProperties2KHR);
     GET_INSTANCE_FUNC(vkGetPhysicalDeviceFeatures2KHR);
+    GET_INSTANCE_FUNC(vkGetPhysicalDeviceMemoryProperties2KHR);
 }
 
 void InitTransformFeedbackEXTFunctions(VkDevice device)
@@ -960,6 +961,20 @@ void InitExternalSemaphoreFdFunctions(VkInstance instance)
 void InitExternalMemoryHostFunctions(VkInstance instance)
 {
     GET_INSTANCE_FUNC(vkGetMemoryHostPointerPropertiesEXT);
+}
+
+// VK_KHR_get_memory_requirements2
+void InitGetMemoryRequirements2KHRFunctions(VkDevice device)
+{
+    GET_DEVICE_FUNC(vkGetBufferMemoryRequirements2KHR);
+    GET_DEVICE_FUNC(vkGetImageMemoryRequirements2KHR);
+}
+
+// VK_KHR_bind_memory2
+void InitBindMemory2KHRFunctions(VkDevice device)
+{
+    GET_DEVICE_FUNC(vkBindBufferMemory2KHR);
+    GET_DEVICE_FUNC(vkBindImageMemory2KHR);
 }
 
 // VK_KHR_external_fence_capabilities
@@ -1295,6 +1310,7 @@ void GetViewport(const gl::Rectangle &viewport,
                  float nearPlane,
                  float farPlane,
                  bool invertViewport,
+                 bool clipSpaceOriginUpperLeft,
                  GLint renderAreaHeight,
                  VkViewport *viewportOut)
 {
@@ -1305,10 +1321,60 @@ void GetViewport(const gl::Rectangle &viewport,
     viewportOut->minDepth = gl::clamp01(nearPlane);
     viewportOut->maxDepth = gl::clamp01(farPlane);
 
-    if (invertViewport)
+    // Say an application intends to draw a primitive (shown as 'o' below), it can choose to use
+    // different clip space origin. When clip space origin (shown as 'C' below) is switched from
+    // lower-left to upper-left, primitives will be rendered with its y-coordinate flipped.
+
+    // Rendered content will differ based on whether it is a default framebuffer or a user defined
+    // framebuffer. We modify the viewport's 'y' and 'h' accordingly.
+
+    // clip space origin is lower-left
+    // Expected draw in GLES        default framebuffer    user defined framebuffer
+    // (0,H)                        (0,0)                  (0,0)
+    // +                            +-----------+  (W,0)   +-----------+ (W,0)
+    // |                            |                      |  C----+
+    // |                            |                      |  |    | (h)
+    // |  +----+                    |  +----+              |  | O  |
+    // |  | O  |                    |  | O  | (-h)         |  +----+
+    // |  |    |                    |  |    |              |
+    // |  C----+                    |  C----+              |
+    // +-----------+ (W,0)          +                      +
+    // (0,0)                        (0,H)                  (0,H)
+    //                              y' = H - h             y' = y
+
+    // clip space origin is upper-left
+    // Expected draw in GLES        default framebuffer     user defined framebuffer
+    // (0,H)                        (0,0)                  (0,0)
+    // +                            +-----------+  (W,0)   +-----------+ (W,0)
+    // |                            |                      |  +----+
+    // |                            |                      |  | O  | (-h)
+    // |  C----+                    |  C----+              |  |    |
+    // |  |    |                    |  |    | (h)          |  C----+
+    // |  | O  |                    |  | O  |              |
+    // |  +----+                    |  +----+              |
+    // +-----------+  (W,0)         +                      +
+    // (0,0)                        (0,H)                  (0,H)
+    //                              y' = H - (y + h)       y' = y + H
+
+    if (clipSpaceOriginUpperLeft)
     {
-        viewportOut->y      = static_cast<float>(renderAreaHeight - viewport.y);
-        viewportOut->height = -viewportOut->height;
+        if (invertViewport)
+        {
+            viewportOut->y = static_cast<float>(renderAreaHeight - (viewport.height + viewport.y));
+        }
+        else
+        {
+            viewportOut->y      = static_cast<float>(viewport.height + viewport.y);
+            viewportOut->height = -viewportOut->height;
+        }
+    }
+    else
+    {
+        if (invertViewport)
+        {
+            viewportOut->y      = static_cast<float>(renderAreaHeight - viewport.y);
+            viewportOut->height = -viewportOut->height;
+        }
     }
 }
 

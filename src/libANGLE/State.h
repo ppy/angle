@@ -173,6 +173,15 @@ class State : angle::NonCopyable
     float getNearPlane() const { return mNearZ; }
     float getFarPlane() const { return mFarZ; }
 
+    // Clip control extension
+    void setClipControl(GLenum origin, GLenum depth);
+    bool isClipControlDepthZeroToOne() const { return mClipControlDepth == GL_ZERO_TO_ONE_EXT; }
+    gl::ClipSpaceOrigin getClipSpaceOrigin() const
+    {
+        return mClipControlOrigin == GL_UPPER_LEFT_EXT ? ClipSpaceOrigin::UpperLeft
+                                                       : ClipSpaceOrigin::LowerLeft;
+    }
+
     // Blend state manipulation
     bool isBlendEnabled() const { return mBlendStateExt.mEnabledMask.test(0); }
     bool isBlendEnabledIndexed(GLuint index) const
@@ -437,7 +446,7 @@ class State : angle::NonCopyable
 
     ANGLE_INLINE bool hasValidAtomicCounterBuffer() const
     {
-        return mValidAtomicCounterBufferCount > 0;
+        return mBoundAtomicCounterBuffersMask.any();
     }
 
     const OffsetBindingPointer<Buffer> &getIndexedUniformBuffer(size_t index) const;
@@ -645,18 +654,31 @@ class State : angle::NonCopyable
         DIRTY_BIT_ATOMIC_COUNTER_BUFFER_BINDING,
         DIRTY_BIT_MULTISAMPLING,
         DIRTY_BIT_SAMPLE_ALPHA_TO_ONE,
-        DIRTY_BIT_COVERAGE_MODULATION,  // CHROMIUM_framebuffer_mixed_samples
-        DIRTY_BIT_FRAMEBUFFER_SRGB,     // GL_EXT_sRGB_write_control
+        DIRTY_BIT_COVERAGE_MODULATION,                  // CHROMIUM_framebuffer_mixed_samples
+        DIRTY_BIT_FRAMEBUFFER_SRGB_WRITE_CONTROL_MODE,  // GL_EXT_sRGB_write_control
         DIRTY_BIT_CURRENT_VALUES,
         DIRTY_BIT_PROVOKING_VERTEX,
         DIRTY_BIT_SAMPLE_SHADING,
         DIRTY_BIT_PATCH_VERTICES,
-        DIRTY_BIT_EXTENDED,  // clip distances, mipmap generation hint, derivative hint.
+        DIRTY_BIT_EXTENDED,  // clip distances, mipmap generation hint, derivative hint,
+                             // EXT_clip_control
         DIRTY_BIT_INVALID,
         DIRTY_BIT_MAX = DIRTY_BIT_INVALID,
     };
 
     static_assert(DIRTY_BIT_MAX <= 64, "State dirty bits must be capped at 64");
+
+    enum ExtendedDirtyBitType
+    {
+        EXTENDED_DIRTY_BIT_CLIP_CONTROL,            // EXT_clip_control
+        EXTENDED_DIRTY_BIT_CLIP_DISTANCES,          // clip distances
+        EXTENDED_DIRTY_BIT_MIPMAP_GENERATION_HINT,  // mipmap generation hint
+        EXTENDED_DIRTY_BIT_SHADER_DERIVATIVE_HINT,  // shader derivative hint
+        EXTENDED_DIRTY_BIT_INVALID,
+        EXTENDED_DIRTY_BIT_MAX = EXTENDED_DIRTY_BIT_INVALID,
+    };
+
+    static_assert(EXTENDED_DIRTY_BIT_MAX <= 32, "State extended dirty bits must be capped at 32");
 
     // TODO(jmadill): Consider storing dirty objects in a list instead of by binding.
     enum DirtyObjectType
@@ -686,6 +708,12 @@ class State : angle::NonCopyable
         mDirtyBits.set();
         mDirtyCurrentValues.set();
     }
+
+    using ExtendedDirtyBits = angle::BitSet32<EXTENDED_DIRTY_BIT_MAX>;
+    const ExtendedDirtyBits &getExtendedDirtyBits() const { return mExtendedDirtyBits; }
+    // TODO(https://anglebug.com/5631): Handle extended dirty bits on non-vulkan backends
+    ExtendedDirtyBits getAndResetExtendedDirtyBits() const;
+    void clearExtendedDirtyBits() { mExtendedDirtyBits.reset(); }
 
     using DirtyObjects = angle::BitSet<DIRTY_OBJECT_MAX>;
     void clearDirtyObjects() { mDirtyObjects.reset(); }
@@ -758,8 +786,8 @@ class State : angle::NonCopyable
 
     ANGLE_INLINE bool validateSamplerFormats() const
     {
-        return (!mExecutable ||
-                (mTexturesIncompatibleWithSamplers & mExecutable->getActiveSamplersMask()).none());
+        return (!mExecutable || !(mTexturesIncompatibleWithSamplers.intersects(
+                                    mExecutable->getActiveSamplersMask())));
     }
 
     ProvokingVertexConvention getProvokingVertex() const { return mProvokingVertex; }
@@ -865,7 +893,7 @@ class State : angle::NonCopyable
   private:
     friend class Context;
 
-    void unsetActiveTextures(ActiveTextureMask textureMask);
+    void unsetActiveTextures(const ActiveTextureMask &textureMask);
     void setActiveTextureDirty(size_t textureIndex, Texture *texture);
     void updateTextureBinding(const Context *context, size_t textureIndex, Texture *texture);
     void updateActiveTextureStateOnSync(const Context *context,
@@ -989,6 +1017,9 @@ class State : angle::NonCopyable
     float mNearZ;
     float mFarZ;
 
+    GLenum mClipControlOrigin;
+    GLenum mClipControlDepth;
+
     Framebuffer *mReadFramebuffer;
     Framebuffer *mDrawFramebuffer;
     BindingPointer<Renderbuffer> mRenderbuffer;
@@ -1037,8 +1068,13 @@ class State : angle::NonCopyable
 
     BufferVector mUniformBuffers;
     BufferVector mAtomicCounterBuffers;
-    uint32_t mValidAtomicCounterBufferCount;
     BufferVector mShaderStorageBuffers;
+
+    angle::BitSet<gl::IMPLEMENTATION_MAX_UNIFORM_BUFFER_BINDINGS> mBoundUniformBuffersMask;
+    angle::BitSet<gl::IMPLEMENTATION_MAX_ATOMIC_COUNTER_BUFFER_BINDINGS>
+        mBoundAtomicCounterBuffersMask;
+    angle::BitSet<gl::IMPLEMENTATION_MAX_SHADER_STORAGE_BUFFER_BINDINGS>
+        mBoundShaderStorageBuffersMask;
 
     BindingPointer<TransformFeedback> mTransformFeedback;
 
@@ -1079,6 +1115,7 @@ class State : angle::NonCopyable
     GLES1State mGLES1State;
 
     DirtyBits mDirtyBits;
+    mutable ExtendedDirtyBits mExtendedDirtyBits;
     DirtyObjects mDirtyObjects;
     mutable AttributesMask mDirtyCurrentValues;
     ActiveTextureMask mDirtyActiveTextures;

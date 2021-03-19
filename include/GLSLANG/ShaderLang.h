@@ -26,7 +26,7 @@
 
 // Version number for shader translation API.
 // It is incremented every time the API changes.
-#define ANGLE_SH_VERSION 252
+#define ANGLE_SH_VERSION 254
 
 enum ShShaderSpec
 {
@@ -69,12 +69,11 @@ enum ShShaderOutput
     SH_HLSL_4_1_OUTPUT       = 0x8B49,  // D3D 11
     SH_HLSL_4_0_FL9_3_OUTPUT = 0x8B4A,  // D3D 11 feature level 9_3
 
-    // Output specialized GLSL to be fed to glslang for Vulkan SPIR.
-    SH_GLSL_VULKAN_OUTPUT = 0x8B4B,
+    // Output SPIR-V for the Vulkan backend.
+    SH_SPIRV_VULKAN_OUTPUT = 0x8B4B,
 
-    // Output specialized GLSL to be fed to glslang for Vulkan SPIR to be cross compiled to Metal
-    // later.
-    SH_GLSL_METAL_OUTPUT = 0x8B4C,
+    // Output SPIR-V to be cross compiled to Metal.
+    SH_SPIRV_METAL_OUTPUT = 0x8B4C,
 };
 
 // Compile options.
@@ -353,6 +352,11 @@ const ShCompileOptions SH_ADD_VULKAN_XFB_EMULATION_SUPPORT_CODE = UINT64_C(1) <<
 // VK_EXT_transform_feedback extension.
 const ShCompileOptions SH_ADD_VULKAN_XFB_EXTENSION_SUPPORT_CODE = UINT64_C(1) << 60;
 
+// This flag initializes fragment shader's output variables to zero at the beginning of the fragment
+// shader's main(). It is intended as a workaround for drivers which get context lost if
+// gl_FragColor is not written.
+const ShCompileOptions SH_INIT_FRAGMENT_OUTPUT_VARIABLES = UINT64_C(1) << 61;
+
 // Defines alternate strategies for implementing array index clamping.
 enum ShArrayIndexClampingStrategy
 {
@@ -396,6 +400,7 @@ struct ShBuiltInResources
     int EXT_shader_texture_lod;
     int WEBGL_debug_shader_precision;
     int EXT_shader_framebuffer_fetch;
+    int EXT_shader_framebuffer_fetch_non_coherent;
     int NV_shader_framebuffer_fetch;
     int NV_shader_noperspective_interpolation;
     int ARM_shader_framebuffer_fetch;
@@ -886,12 +891,16 @@ extern const char kLineRasterEmulationPosition[];
 
 // Transform feedback emulation support
 extern const char kXfbEmulationGetOffsetsFunctionName[];
+extern const char kXfbEmulationCaptureFunctionName[];
 extern const char kXfbEmulationBufferBlockName[];
 extern const char kXfbEmulationBufferName[];
 extern const char kXfbEmulationBufferFieldName[];
 
 // Transform feedback extension support
 extern const char kXfbExtensionPositionOutName[];
+
+// EXT_shader_framebuffer_fetch and EXT_shader_framebuffer_fetch_non_coherent
+extern const char kInputAttachmentName[];
 
 }  // namespace vk
 

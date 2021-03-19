@@ -34,6 +34,7 @@ struct PlatformParameters
     EGLint getRenderer() const;
     EGLint getDeviceType() const;
     bool isSwiftshader() const;
+    EGLint getAllocateNonZeroMemoryFeature() const;
 
     void initDefaultParameters();
 
@@ -280,6 +281,13 @@ inline PlatformParameters WithAsyncCommandQueueFeatureVulkan(const PlatformParam
     PlatformParameters withAsyncCommandQueue                           = params;
     withAsyncCommandQueue.eglParameters.asyncCommandQueueFeatureVulkan = EGL_TRUE;
     return withAsyncCommandQueue;
+}
+
+inline PlatformParameters WithNoVulkanViewportFlip(const PlatformParameters &params)
+{
+    PlatformParameters withoutVulkanViewportFlip                       = params;
+    withoutVulkanViewportFlip.eglParameters.supportsVulkanViewportFlip = EGL_FALSE;
+    return withoutVulkanViewportFlip;
 }
 }  // namespace angle
 
