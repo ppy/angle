@@ -174,7 +174,7 @@ const char *GetVendorString(uint32_t vendorId)
             return "NULL";
         default:
             // TODO(jmadill): More vendor IDs.
-            UNIMPLEMENTED();
+            // UNIMPLEMENTED();
             return "Unknown";
     }
 }
