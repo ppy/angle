@@ -532,6 +532,9 @@ EGLint SwapChain11::resize(DisplayD3D *displayD3D, EGLint backbufferWidth, EGLin
 
     mFirstSwap = true;
 
+    bool isFullscreen = (GetWindowLong(window, GWL_STYLE) & WS_POPUP) > 0;
+    mSwapChain->SetFullscreenState(isFullscreen);
+
     return resetOffscreenBuffers(displayD3D, backbufferWidth, backbufferHeight);
 }
 
