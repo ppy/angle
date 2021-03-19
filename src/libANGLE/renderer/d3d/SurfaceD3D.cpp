@@ -358,8 +358,8 @@ egl::Error SurfaceD3D::checkForOutOfDateSwapChain(DisplayD3D *displayD3D)
 
 egl::Error SurfaceD3D::toggleWindowed(DisplayD3D *displayD3D)
 {
-    ANGLE_TRY(mSwapChain->toggleWindowed());
-    ANGLE_TRY(resetSwapChain(displayD3D, mSwapChain->getWidth(), mSwapChain->getHeight()));
+    // ANGLE_TRY(mSwapChain->toggleWindowed());
+    // ANGLE_TRY(resetSwapChain(displayD3D, mSwapChain->getWidth(), mSwapChain->getHeight()));
 
     return egl::NoError();
 }

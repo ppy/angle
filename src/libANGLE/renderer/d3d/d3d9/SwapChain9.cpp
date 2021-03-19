@@ -136,8 +136,18 @@ EGLint SwapChain9::reset(DisplayD3D *displayD3D,
     presentParameters.EnableAutoDepthStencil = TRUE;
     presentParameters.hDeviceWindow          = window;
 
+    bool isFullscreen = (GetWindowLong(window, GWL_STYLE) & WS_POPUP) > 0;
+
+    // MONITORINFOEX monitorInfo = {0};
+    // monitorInfo.cbSize        = sizeof(MONITORINFOEX);
+    // GetMonitorInfo(mRenderer->getD3D9()->GetAdapterMonitor(D3DADAPTER_DEFAULT), &monitorInfo);
+
+    // DEVMODE deviceMode = {0};
+    // deviceMode.cbSize  = sizeof(DEVMODE);
+    // EnumDisplaySettings(monitorInfo.szDevice, ENUM_CURRENT_SETTINGS, &deviceMode);
+
     // Specialized presentation parameters
-    if (!mWindowed)
+    if (isFullscreen)
     {
         // Fullscreen
         D3DDISPLAYMODE displayMode = getDisplayMode();
