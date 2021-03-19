@@ -532,8 +532,8 @@ EGLint SwapChain11::resize(DisplayD3D *displayD3D, EGLint backbufferWidth, EGLin
 
     mFirstSwap = true;
 
-    bool isFullscreen = (GetWindowLong(window, GWL_STYLE) & WS_POPUP) > 0;
-    mSwapChain->SetFullscreenState(isFullscreen);
+    bool isFullscreen = (GetWindowLong(mNativeWindow->getNativeWindow(), GWL_STYLE) & WS_POPUP) > 0;
+    mSwapChain->SetFullscreenState(isFullscreen, nullptr);
 
     return resetOffscreenBuffers(displayD3D, backbufferWidth, backbufferHeight);
 }
@@ -655,6 +655,9 @@ EGLint SwapChain11::reset(DisplayD3D *displayD3D,
     }
 
     mFirstSwap = true;
+
+    bool isFullscreen = (GetWindowLong(mNativeWindow->getNativeWindow(), GWL_STYLE) & WS_POPUP) > 0;
+    mSwapChain->SetFullscreenState(isFullscreen, nullptr);
 
     return resetOffscreenBuffers(displayD3D, backbufferWidth, backbufferHeight);
 }
