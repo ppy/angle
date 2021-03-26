@@ -377,10 +377,7 @@ EGLint SwapChain9::swapRect(DisplayD3D *displayD3D, EGLint x, EGLint y, EGLint w
 
     device->SetTexture(0, nullptr);
 
-    RECT rect = {static_cast<LONG>(x), static_cast<LONG>(mHeight - y - height),
-                 static_cast<LONG>(x + width), static_cast<LONG>(mHeight - y)};
-
-    HRESULT result = mSwapChain->Present(&rect, &rect, nullptr, nullptr, 0);
+    HRESULT result = device->Present(nullptr, nullptr, nullptr, nullptr);
 
     mRenderer->markAllStateDirty();
 
