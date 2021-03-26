@@ -142,9 +142,12 @@ EGLint SwapChain9::reset(DisplayD3D *displayD3D,
         // Fullscreen
         D3DDISPLAYMODE displayMode = getDisplayMode();
 
+        backbufferWidth  = displayMode.Width;
+        backbufferHeight = displayMode.Height;
+
         presentParameters.Windowed                   = FALSE;
-        presentParameters.BackBufferWidth            = displayMode.Width;
-        presentParameters.BackBufferHeight           = displayMode.Height;
+        presentParameters.BackBufferWidth            = backbufferWidth;
+        presentParameters.BackBufferHeight           = backbufferHeight;
         presentParameters.FullScreen_RefreshRateInHz = displayMode.RefreshRate;
     }
     else
@@ -242,9 +245,8 @@ EGLint SwapChain9::reset(DisplayD3D *displayD3D,
         pShareHandle = &mShareHandle;
 
     HRESULT result = mRenderer->getDevice()->CreateTexture(
-        presentParameters.BackBufferWidth, presentParameters.BackBufferHeight, 1,
-        D3DUSAGE_RENDERTARGET, backBuffered3dFormatInfo.texFormat, D3DPOOL_DEFAULT,
-        &mOffscreenTexture, pShareHandle);
+        backbufferWidth, backbufferHeight, 1, D3DUSAGE_RENDERTARGET,
+        backBuffered3dFormatInfo.texFormat, D3DPOOL_DEFAULT, &mOffscreenTexture, pShareHandle);
     if (FAILED(result))
     {
         ERR() << "Could not create offscreen texture, " << gl::FmtHR(result);
@@ -269,14 +271,14 @@ EGLint SwapChain9::reset(DisplayD3D *displayD3D,
     {
         RECT rect = {0, 0, mWidth, mHeight};
 
-        if (rect.right > static_cast<LONG>(presentParameters.BackBufferWidth))
+        if (rect.right > static_cast<LONG>(backbufferWidth))
         {
-            rect.right = presentParameters.BackBufferWidth;
+            rect.right = backbufferWidth;
         }
 
-        if (rect.bottom > static_cast<LONG>(presentParameters.BackBufferHeight))
+        if (rect.bottom > static_cast<LONG>(backbufferHeight))
         {
-            rect.bottom = presentParameters.BackBufferHeight;
+            rect.bottom = backbufferHeight;
         }
 
         mRenderer->endScene();
@@ -288,8 +290,8 @@ EGLint SwapChain9::reset(DisplayD3D *displayD3D,
         SafeRelease(oldRenderTarget);
     }
 
-    mWidth        = presentParameters.BackBufferWidth;
-    mHeight       = presentParameters.BackBufferHeight;
+    mWidth        = backbufferWidth;
+    mHeight       = backbufferHeight;
     mSwapInterval = swapInterval;
 
     return EGL_SUCCESS;
